@@ -149,6 +149,7 @@ class Payment(models.Model):
     ]
 
     PAYMENT_METHODS = [
+        ('payshap', 'PayShap'),
         ('card', 'Card'),
         ('bank_transfer', 'Bank Transfer'),
         ('debit_order', 'Debit Order'),

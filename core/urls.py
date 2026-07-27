@@ -19,6 +19,7 @@ urlpatterns = [
     path('dashboard/customer/policies/', views.customer_policies, name='customer_policies'),
     path('dashboard/customer/policies/<int:policy_id>/', views.customer_policy_detail, name='customer_policy_detail'),
     path('dashboard/customer/purchase/', views.customer_purchase_policy, name='customer_purchase_policy'),
+    path('dashboard/customer/policies/<int:policy_id>/pay/', views.customer_payshap_payment, name='customer_payshap_payment'),
     path('dashboard/customer/policies/<int:policy_id>/renew/', views.customer_renew_policy, name='customer_renew_policy'),
     path('dashboard/customer/policies/<int:policy_id>/cancel/', views.customer_cancel_policy, name='customer_cancel_policy'),
     path('dashboard/customer/claims/', views.customer_claims, name='customer_claims'),

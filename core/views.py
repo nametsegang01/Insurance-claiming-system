@@ -409,6 +409,56 @@ def customer_cancel_policy(request, policy_id):
 
 
 @role_required('policyholder')
+def customer_payshap_payment(request, policy_id):
+    policy = get_object_or_404(Policy, id=policy_id, user=request.user)
+
+    if policy.status not in ('active', 'pending'):
+        messages.error(request, 'This policy is not eligible for payment.')
+        return redirect('customer_policy_detail', policy_id=policy.id)
+
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        payment_type = request.POST.get('payment_type', 'premium')
+
+        if not amount:
+            messages.error(request, 'Amount is required.')
+            return redirect('customer_payshap_payment', policy_id=policy.id)
+
+        amount = Decimal(amount)
+        if amount <= 0:
+            messages.error(request, 'Amount must be greater than zero.')
+            return redirect('customer_payshap_payment', policy_id=policy.id)
+
+        payment_number = f"PAY-{datetime.now().year}-{Payment.objects.count() + 1001}"
+        payment = Payment.objects.create(
+            payment_number=payment_number,
+            user=request.user,
+            policy=policy,
+            amount=amount,
+            payment_method='payshap',
+            payment_type=payment_type,
+            status='completed',
+            due_date=timezone.now().date(),
+            paid_at=timezone.now(),
+            reference=f"PayShap-{payment_number}",
+        )
+
+        notify(request.user, 'Payment Successful',
+               f'Your PayShap payment of R {amount:.2f} for policy {policy.policy_number} was successful.',
+               category='payment', related_policy=policy, related_payment=payment)
+        notify_role('staff', 'Payment Received',
+                    f'{request.user.get_full_name()} paid R {amount:.2f} via PayShap for {policy.policy_number}.',
+                    category='payment')
+        log_activity(request.user, 'create', f'Paid R {amount:.2f} via PayShap for policy {policy.policy_number}')
+
+        messages.success(request, f'PayShap payment of R {amount:.2f} completed successfully.')
+        return redirect('customer_policy_detail', policy_id=policy.id)
+
+    context = {'policy': policy}
+    return render(request, 'core/customer_payshap_payment.html', context)
+
+
+@role_required('policyholder')
 def customer_claims(request):
     claims = Claim.objects.filter(user=request.user).order_by('-submitted_at')
     context = {

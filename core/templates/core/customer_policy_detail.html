@@ -34,7 +34,8 @@
 
 {% if policy.status == 'active' or policy.status == 'expired' %}
 <div class="row mb-24" style="gap:10px">
-  <a href="{% url 'customer_renew_policy' policy.id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-rotate-right"></i> Renew policy</a>
+  <a href="{% url 'customer_payshap_payment' policy.id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-bolt"></i> Pay with PayShap</a>
+  <a href="{% url 'customer_renew_policy' policy.id %}" class="btn btn-sm"><i class="fa-solid fa-rotate-right"></i> Renew policy</a>
   {% if policy.status == 'active' %}
   <a href="{% url 'customer_cancel_policy' policy.id %}" class="btn btn-danger btn-sm"><i class="fa-solid fa-ban"></i> Cancel policy</a>
   {% endif %}
