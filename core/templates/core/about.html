@@ -1,106 +1,45 @@
-<!-- templates/core/about.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIFDS - About</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; overflow-x: hidden; }
-        a { text-decoration: none; color: inherit; }
-        
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            padding: 1rem 5%; background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(20px); box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            display: flex; justify-content: space-between; align-items: center;
-            transition: all 0.3s ease;
-        }
-        .navbar.scrolled { background: rgba(255,255,255,0.95); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .nav-brand { display: flex; align-items: center; gap: 12px; font-size: 1.6rem; font-weight: 800; color: #0f172a; }
-        .nav-brand i { color: #2563eb; font-size: 2rem; }
-        .nav-brand span { background: linear-gradient(135deg, #2563eb, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-links { display: flex; gap: 2.5rem; align-items: center; list-style: none; }
-        .nav-links a { font-size: 0.95rem; font-weight: 500; color: #475569; transition: color 0.3s; position: relative; }
-        .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #2563eb, #7c3aed); transition: width 0.3s; }
-        .nav-links a:hover { color: #0f172a; }
-        .nav-links a:hover::after { width: 100%; }
-        
-        .about-page { padding: 10rem 5% 5rem; min-height: 100vh; max-width: 1200px; margin: 0 auto; }
-        .about-page h1 { font-size: 3rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem; }
-        .about-page p { color: #64748b; font-size: 1.1rem; max-width: 800px; margin-bottom: 2rem; line-height: 1.8; }
-        
-        .footer {
-            background: #0f172a; color: #94a3b8; padding: 3rem 5% 2rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; max-width: 1200px; margin: 0 auto; }
-        .footer-brand { font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 0.8rem; }
-        .footer-brand i { color: #2563eb; margin-right: 8px; }
-        .footer p { font-size: 0.9rem; line-height: 1.8; }
-        .footer h4 { color: white; font-size: 1rem; margin-bottom: 1rem; }
-        .footer ul { list-style: none; }
-        .footer ul li { padding: 0.3rem 0; }
-        .footer ul li a { color: #94a3b8; transition: color 0.3s; font-size: 0.9rem; }
-        .footer ul li a:hover { color: white; }
-        .footer-bottom { max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; font-size: 0.85rem; }
-        
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .about-page h1 { font-size: 2.2rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - SIFDS Insurance</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body>
-    <nav class="navbar" id="navbar">
-        <div class="nav-brand"><i class="fas fa-shield-halved"></i><span>SIFDS</span></div>
-        <ul class="nav-links">
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'features' %}">Features</a></li>
-            <li><a href="{% url 'about' %}" style="color: #2563eb;">About</a></li>
-            <li><a href="{% url 'contact' %}">Contact</a></li>
-        </ul>
-    </nav>
-    
-    <section class="about-page">
-        <h1>About SIFDS</h1>
-        <p>Welcome to SIFDS Insurance Management System Version 2.0. We are transforming the traditional insurance process into a fully digital, intelligent, and real-time platform.</p>
-        <p>Our mission is to provide peace of mind through AI-powered fraud detection, instant claim processing, and 24/7 virtual assistance. We believe insurance should be fast, transparent, and secure.</p>
-        <p>With SIFDS, customers can purchase policies, submit claims, track fraud assessments, and manage their insurance portfolio from a single modern dashboard.</p>
-    </section>
-    
-    <footer class="footer" id="contact">
-        <div class="footer-grid">
-            <div>
-                <div class="footer-brand"><i class="fas fa-shield-halved"></i> SIFDS</div>
-                <p>Smart Insurance Fraud Detection System. AI-powered insurance management for a secure future.</p>
-            </div>
-            <div>
-                <h4>Products</h4>
-                <ul><li><a href="#">Vehicle Insurance</a></li><li><a href="#">Home Insurance</a></li><li><a href="#">Life Insurance</a></li></ul>
-            </div>
-            <div>
-                <h4>Company</h4>
-                <ul><li><a href="#">About Us</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
-            </div>
-            <div>
-                <h4>Support</h4>
-                <ul><li><a href="#">Help Center</a></li><li><a href="#">FAQ</a></li><li><a href="#">Privacy Policy</a></li></ul>
-            </div>
-        </div>
-        <div class="footer-bottom"><p>&copy; 2026 SIFDS Insurance Management System. All rights reserved.</p></div>
-    </footer>
-    
-    <script>
-        window.addEventListener('scroll', function() {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) { navbar.classList.add('scrolled'); }
-            else { navbar.classList.remove('scrolled'); }
-        });
-    </script>
+  <nav class="site-nav">
+    <a href="{% url 'home' %}" class="brand"><span class="dot"></span> SIFDS Insurance</a>
+    <div class="links">
+      <a href="{% url 'features' %}">Features</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'contact' %}">Contact</a>
+      <a href="{% url 'login' %}" class="btn btn-sm">Log in</a>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign up</a>
+    </div>
+  </nav>
+
+  <section class="section">
+    <h2>About SIFDS Insurance</h2>
+    <p class="lead">A centralized platform for managing insurance, built to be simple.</p>
+    <div class="card">
+      <div class="card-body">
+        <p style="font-size:16px; line-height:1.7; color:var(--text-muted)">
+          SIFDS Insurance is a web-based system that brings policy management, claims, payments,
+          investigations, and notifications into one place. It replaces manual, fragmented
+          processes with a clear workflow that connects policyholders, staff, investigators,
+          and administrators.
+        </p>
+        <p style="font-size:16px; line-height:1.7; color:var(--text-muted); margin-top:16px">
+          Every claim is screened automatically for fraud risk, suspicious claims are flagged
+          for investigation, and approved claims move through to payment — all within a single
+          platform.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">&copy; {% now "Y" %} SIFDS Insurance.</footer>
 </body>
 </html>

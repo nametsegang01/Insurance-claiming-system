@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SIFDS Insurance{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block body %}
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand"><span class="dot"></span> SIFDS Insurance</div>
+      <nav class="sidebar-nav">
+        {% block sidebar %}{% endblock %}
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+          <div class="meta">
+            <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="role">{{ request.user.profile.role }}</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="row">
+          <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+          <h1>{% block page_title %}{% endblock %}</h1>
+        </div>
+        <div class="right">
+          <a href="{% block notif_url %}#{% endblock %}" class="notif" title="Notifications">
+            <i class="fa-regular fa-bell"></i>
+            {% block notif_badge %}{% endblock %}
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-sm" title="Log out"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+        </div>
+      </header>
+      <main class="content">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% endblock %}
+</body>
+</html>
