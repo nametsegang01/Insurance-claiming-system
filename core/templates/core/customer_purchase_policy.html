@@ -1,0 +1,1502 @@
+<!-- templates/core/customer_purchase_policy.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS | Purchase Insurance</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-2: #7c3aed;
+            --primary-light: rgba(37, 99, 235, 0.10);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255,255,255,0.8);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ============================================================ */
+        /* SIDEBAR */
+        /* ============================================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+        .brand-text h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p { font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; }
+
+        .sidebar-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.25s;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-links a i { width: 18px; text-align: center; font-size: 15px; color: #64748b; transition: 0.25s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-links a:hover i { color: var(--primary); }
+        .nav-links a.active {
+            background: rgba(37, 99, 235, 0.12);
+            color: white;
+        }
+        .nav-links a.active i { color: var(--primary); }
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-links a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-links a .badge.success { background: var(--success); }
+        .nav-links a .badge.warning { background: var(--warning); }
+        .nav-links a .badge.danger { background: var(--danger); }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 10px;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: 0.25s;
+            text-decoration: none;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .sidebar-footer a i { width: 18px; color: #64748b; }
+        .sidebar-footer a.logout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+        .sidebar-footer a.logout:hover i { color: var(--danger); }
+
+        /* ============================================================ */
+        /* MAIN CONTENT */
+        /* ============================================================ */
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* TOPBAR */
+        /* ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .notification-bell:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .notification-bell .dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid white;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.25s;
+        }
+
+        .user-profile:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ============================================================ */
+        /* PAGE HEADER */
+        /* ============================================================ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-header .left h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .page-header .left p {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .page-header .right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ============================================================ */
+        /* AI COMPARISON BANNER */
+        /* ============================================================ */
+        .ai-comparison {
+            background: linear-gradient(135deg, #0f172a, #1a2332);
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-comparison::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .ai-comparison .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-comparison .header .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .ai-comparison .header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .ai-comparison .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-comparison .content p {
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .ai-comparison .content p strong {
+            color: white;
+        }
+
+        .ai-comparison .content .highlight {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .ai-comparison .btn-compare {
+            margin-top: 16px;
+            padding: 10px 28px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-comparison .btn-compare:hover {
+            background: rgba(37, 99, 235, 0.20);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.15);
+        }
+
+        /* ============================================================ */
+        /* POLICY GRID */
+        /* ============================================================ */
+        .policy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .policy-tier {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 24px;
+            border: 1px solid var(--border);
+            transition: 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .policy-tier:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        .policy-tier .tier-badge {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .policy-tier .tier-badge.popular {
+            background: var(--success);
+        }
+        .policy-tier .tier-badge.best-value {
+            background: var(--warning);
+        }
+        .policy-tier .tier-badge.premium {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        }
+
+        .policy-tier .tier-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .policy-tier h3 {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
+
+        .policy-tier .tier-desc {
+            color: var(--muted);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .policy-tier .tier-price {
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .policy-tier .tier-price .currency {
+            font-size: 18px;
+            font-weight: 600;
+            vertical-align: top;
+            color: var(--muted);
+        }
+
+        .policy-tier .tier-price .amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .policy-tier .tier-price .period {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .policy-tier .tier-features {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 20px;
+            text-align: left;
+            flex: 1;
+        }
+
+        .policy-tier .tier-features li {
+            padding: 6px 0;
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .policy-tier .tier-features li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .policy-tier .btn-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .policy-tier .btn-select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .policy-tier .btn-select.comprehensive {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .policy-tier .btn-select.premium-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .policy-tier .ai-recommendation {
+            text-align: center;
+            margin-top: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(37, 99, 235, 0.06);
+        }
+
+        .policy-tier .ai-recommendation.basic {
+            background: rgba(37, 99, 235, 0.06);
+            color: var(--primary);
+        }
+        .policy-tier .ai-recommendation.comprehensive {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+            border-color: rgba(34, 197, 94, 0.10);
+        }
+        .policy-tier .ai-recommendation.premium {
+            background: rgba(124, 58, 237, 0.10);
+            color: #7c3aed;
+            border-color: rgba(124, 58, 237, 0.10);
+        }
+
+        .policy-tier .ai-recommendation i {
+            margin-right: 6px;
+        }
+
+        /* ============================================================ */
+        /* COMPARE PLANS MODAL - REDESIGNED */
+        /* ============================================================ */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 1100px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-content .modal-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .modal-content .modal-header h2 i {
+            color: var(--primary);
+        }
+
+        .modal-content .modal-header .close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .modal-content .modal-header .close:hover {
+            color: #0f172a;
+            transform: rotate(90deg);
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .compare-table th:first-child,
+        .compare-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: #0f172a;
+            min-width: 160px;
+        }
+
+        .compare-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 16px 16px;
+        }
+
+        .compare-table th .sub {
+            font-size: 12px;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .compare-table th .badge-cell {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 50px;
+        }
+
+        .compare-table th .badge-cell.best-value {
+            color: #22c55e;
+        }
+
+        .compare-table th .badge-cell.premium-cell {
+            color: #7c3aed;
+        }
+
+        .compare-table tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .compare-table tr:hover td {
+            background: rgba(37, 99, 235, 0.02);
+        }
+
+        .compare-table .highlight-col {
+            background: rgba(34, 197, 94, 0.03) !important;
+            border-left: 2px solid #22c55e;
+            border-right: 2px solid #22c55e;
+        }
+
+        .compare-table .highlight-col:hover td {
+            background: rgba(34, 197, 94, 0.06) !important;
+        }
+
+        .compare-table .check {
+            color: var(--success);
+        }
+        .compare-table .times {
+            color: var(--danger);
+        }
+
+        .compare-table .price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .compare-table .price.highlight {
+            color: #22c55e;
+        }
+
+        .compare-table .btn-select-sm {
+            padding: 8px 24px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+            width: 100%;
+        }
+
+        .compare-table .btn-select-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .compare-table .btn-select-sm.comprehensive-sm {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .compare-table .btn-select-sm.comprehensive-sm:hover {
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .compare-table .btn-select-sm.premium-sm {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .compare-table .btn-select-sm.premium-sm:hover {
+            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+        }
+
+        .compare-modal-footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .compare-modal-footer i {
+            color: var(--primary);
+        }
+
+        .compare-modal-footer .highlight-text {
+            font-weight: 600;
+            color: #22c55e;
+        }
+
+        /* ============================================================ */
+        /* TOAST */
+        /* ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .toast.show { display: block; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.warning { background: #f59e0b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 1024px) {
+            .policy-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 72px;
+                padding: 16px 10px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: none;
+            }
+            .sidebar .brand { justify-content: center; padding-bottom: 12px; margin-bottom: 16px; }
+            .sidebar .nav-links a { justify-content: center; padding: 10px; }
+            .sidebar .nav-links a i { font-size: 18px; width: auto; }
+            .sidebar .nav-links a .badge { display: none; }
+            .sidebar .sidebar-footer a { justify-content: center; }
+            .sidebar .sidebar-footer a i { font-size: 18px; width: auto; }
+
+            .main { margin-left: 72px; padding: 20px; }
+            .modal-content { padding: 24px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: block;
+            }
+            .sidebar .nav-links a { justify-content: flex-start; padding: 10px 14px; }
+            .sidebar .nav-links a i { font-size: 15px; width: 18px; }
+            .sidebar .nav-links a .badge { display: inline; }
+            .sidebar .sidebar-footer a { justify-content: flex-start; }
+            .sidebar .sidebar-footer a i { font-size: 15px; width: 18px; }
+
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .menu-toggle { display: block; }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .policy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 16px;
+            }
+
+            .compare-table th,
+            .compare-table td {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .compare-table th:first-child,
+            .compare-table td:first-child {
+                min-width: 100px;
+            }
+
+            .compare-table .price {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .policy-tier {
+                padding: 20px 16px;
+            }
+
+            .compare-table th,
+            .compare-table td {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .compare-table th:first-child,
+            .compare-table td:first-child {
+                min-width: 80px;
+                font-size: 11px;
+            }
+
+            .compare-table .price {
+                font-size: 14px;
+            }
+
+            .compare-table .btn-select-sm {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .ai-comparison {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- SIDEBAR -->
+    <!-- ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2><span>SIFDS</span></h2>
+                <p>Insurance System 2.0</p>
+            </div>
+        </div>
+
+        <div class="sidebar-title">Main</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_dashboard' %}">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Insurance</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_purchase_policy' %}" class="active">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buy Insurance</span>
+            </a>
+            <a href="{% url 'customer_policies' %}">
+                <i class="fas fa-file-contract"></i>
+                <span>My Policies</span>
+                {% if policies %}
+                <span class="badge">{{ policies|length }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_renew_policy' %}">
+                <i class="fas fa-sync"></i>
+                <span>Renew Policies</span>
+            </a>
+            <a href="{% url 'customer_update_policy' %}">
+                <i class="fas fa-arrow-up"></i>
+                <span>Upgrade Coverage</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Claims</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_submit_claim' %}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Submit Claim</span>
+            </a>
+            <a href="{% url 'customer_claims' %}">
+                <i class="fas fa-file-alt"></i>
+                <span>My Claims</span>
+                {% if pending_claims > 0 %}
+                <span class="badge warning">{{ pending_claims }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_track_claim' %}">
+                <i class="fas fa-search"></i>
+                <span>Track Claims</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Payments</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_payments' %}">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a href="{% url 'customer_invoices' %}">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>Payment History</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-receipt"></i>
+                <span>Receipts</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Documents</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_documents' %}">
+                <i class="fas fa-folder"></i>
+                <span>Documents</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">AI & Security</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_ai_assistant' %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="{% url 'customer_fraud_monitor' %}">
+                <i class="fas fa-shield-alt"></i>
+                <span>Fraud Monitor</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Account</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_profile' %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'customer_notifications' %}">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                {% if unread_notifications > 0 %}
+                <span class="badge danger">{{ unread_notifications }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_settings' %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="{% url 'customer_support' %}">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main class="main">
+
+        <!-- ===== TOPBAR ===== -->
+        <div class="topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="date">{{ now|date:"d M Y" }}</span>
+                <div class="notification-bell" onclick="toggleNotificationsDropdown()">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_notifications > 0 %}
+                    <span class="dot" id="notificationDot"></span>
+                    {% endif %}
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name|default:"U"|make_list|first }}</div>
+                    <span class="user-name">{{ user.first_name|default:user.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE HEADER ===== -->
+        <div class="page-header">
+            <div class="left">
+                <h2>Insurance Marketplace</h2>
+                <p>Browse and purchase insurance policies tailored to your needs</p>
+            </div>
+            <div class="right">
+                <a href="{% url 'customer_dashboard' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- ===== AI COMPARISON BANNER ===== -->
+        <div class="ai-comparison">
+            <div class="header">
+                <div class="icon"><i class="fas fa-robot"></i></div>
+                <h3>AI Recommendation</h3>
+            </div>
+            <div class="content">
+                <p>
+                    Based on your profile, we recommend the <strong>Comprehensive Plan</strong> 
+                    which offers the best coverage for your needs. 
+                    {% if policies|length > 0 %}
+                        <span class="highlight">You could save up to 10% by bundling your existing policies.</span>
+                    {% else %}
+                        <span class="highlight">Get started with a plan that fits your lifestyle.</span>
+                    {% endif %}
+                </p>
+                <button class="btn-compare" onclick="openCompareModal()">
+                    <i class="fas fa-chart-bar"></i> Compare Plans
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== POLICY GRID ===== -->
+        <div class="policy-grid">
+
+            <!-- Basic Plan -->
+            <div class="policy-tier" data-plan="basic">
+                <div class="tier-badge popular">Popular</div>
+                <div class="tier-icon" style="background: rgba(37, 99, 235, 0.10); color: #2563eb;">
+                    <i class="fas fa-shield"></i>
+                </div>
+                <h3>Basic Plan</h3>
+                <p class="tier-desc">Essential coverage for everyday protection</p>
+                <div class="tier-price">
+                    <span class="currency">R</span>
+                    <span class="amount">299</span>
+                    <span class="period">/month</span>
+                </div>
+                <ul class="tier-features">
+                    <li>Essential coverage up to R100,000</li>
+                    <li>Accident and theft protection</li>
+                    <li>24/7 emergency assistance</li>
+                    <li>Basic AI fraud monitoring</li>
+                </ul>
+                <button class="btn-select" onclick="selectPlan('basic')">Select Plan</button>
+                <div class="ai-recommendation basic">
+                    <i class="fas fa-robot"></i> AI Score: 85% Fit
+                </div>
+            </div>
+
+            <!-- Comprehensive Plan -->
+            <div class="policy-tier" data-plan="comprehensive" style="border-color: rgba(34, 197, 94, 0.20);">
+                <div class="tier-badge best-value">Best Value</div>
+                <div class="tier-icon" style="background: rgba(34, 197, 94, 0.10); color: #22c55e;">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <h3>Comprehensive Plan</h3>
+                <p class="tier-desc">Complete protection with premium benefits</p>
+                <div class="tier-price">
+                    <span class="currency">R</span>
+                    <span class="amount" style="color: #22c55e;">499</span>
+                    <span class="period">/month</span>
+                </div>
+                <ul class="tier-features">
+                    <li>Comprehensive coverage up to R350,000</li>
+                    <li>Accident, theft, and natural disaster protection</li>
+                    <li>24/7 roadside assistance</li>
+                    <li>Advanced AI fraud monitoring & risk analysis</li>
+                    <li>Free legal advice</li>
+                </ul>
+                <button class="btn-select comprehensive" onclick="selectPlan('comprehensive')">
+                    <i class="fas fa-star"></i> Select Plan
+                </button>
+                <div class="ai-recommendation comprehensive">
+                    <i class="fas fa-robot"></i> AI Score: 96% Fit ⭐ Recommended
+                </div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="policy-tier" data-plan="premium">
+                <div class="tier-badge premium">Premium</div>
+                <div class="tier-icon" style="background: rgba(124, 58, 237, 0.10); color: #7c3aed;">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h3>Premium Plan</h3>
+                <p class="tier-desc">Ultimate protection with VIP services</p>
+                <div class="tier-price">
+                    <span class="currency">R</span>
+                    <span class="amount" style="color: #7c3aed;">799</span>
+                    <span class="period">/month</span>
+                </div>
+                <ul class="tier-features">
+                    <li>Premium coverage up to R1,000,000</li>
+                    <li>All-inclusive protection</li>
+                    <li>24/7 VIP concierge support</li>
+                    <li>Advanced AI fraud detection</li>
+                    <li>Free legal & financial advice</li>
+                    <li>Annual health checkup</li>
+                </ul>
+                <button class="btn-select premium-btn" onclick="selectPlan('premium')">
+                    <i class="fas fa-crown"></i> Select Plan
+                </button>
+                <div class="ai-recommendation premium">
+                    <i class="fas fa-robot"></i> AI Score: 88% Fit
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- COMPARE PLANS MODAL - REDESIGNED -->
+    <!-- ============================================================ -->
+    <div class="modal" id="compareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-bar"></i> Compare Insurance Plans</h2>
+                <button class="close" onclick="closeCompareModal()">&times;</button>
+            </div>
+            <div style="overflow-x: auto; padding: 4px 0;">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Features</th>
+                            <th>
+                                <div>Basic</div>
+                                <div class="sub">Essential Protection</div>
+                            </th>
+                            <th style="border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;">
+                                <div><span class="badge-cell best-value">⭐ BEST VALUE</span></div>
+                                <div>Comprehensive</div>
+                                <div class="sub">Complete Protection</div>
+                            </th>
+                            <th>
+                                <div><span class="badge-cell premium-cell">👑 PREMIUM</span></div>
+                                <div>Premium</div>
+                                <div class="sub">VIP Protection</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Monthly Premium</td>
+                            <td><span class="price">R299</span></td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="price highlight">R499</span></td>
+                            <td><span class="price">R799</span></td>
+                        </tr>
+                        <tr>
+                            <td>Coverage Amount</td>
+                            <td>R100,000</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e; font-weight: 600;">R350,000</td>
+                            <td style="font-weight: 600;">R1,000,000</td>
+                        </tr>
+                        <tr>
+                            <td>Accident Protection</td>
+                            <td><span class="check">✓</span> Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>Theft Protection</td>
+                            <td><span class="check">✓</span> Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>Natural Disaster Cover</td>
+                            <td><span class="times">✗</span> Not Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>24/7 Emergency Support</td>
+                            <td><span class="check">✓</span> Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>AI Fraud Monitoring</td>
+                            <td><span class="check">✓</span> Basic</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Advanced</td>
+                            <td><span class="check">✓</span> Premium</td>
+                        </tr>
+                        <tr>
+                            <td>Legal Assistance</td>
+                            <td><span class="times">✗</span> Not Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="check">✓</span> Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>VIP Concierge Service</td>
+                            <td><span class="times">✗</span> Not Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="times">✗</span> Not Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr>
+                            <td>Annual Health Checkup</td>
+                            <td><span class="times">✗</span> Not Included</td>
+                            <td style="background: rgba(34, 197, 94, 0.03); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e;"><span class="times">✗</span> Not Included</td>
+                            <td><span class="check">✓</span> Included</td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #e2e8f0;">
+                            <td style="font-weight: 700;">AI Recommendation Score</td>
+                            <td>85%</td>
+                            <td style="background: rgba(34, 197, 94, 0.06); border-left: 2px solid #22c55e; border-right: 2px solid #22c55e; font-weight: 700; color: #22c55e;">96% ⭐</td>
+                            <td>88%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="compare-modal-footer">
+                <i class="fas fa-info-circle"></i>
+                All plans include AI fraud monitoring and 24/7 support. Prices are per month.
+                <span class="highlight-text">Comprehensive is our recommended plan.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function toggleNotificationsDropdown() {
+            const dot = document.getElementById('notificationDot');
+            if (dot) dot.style.display = 'none';
+            showToast('Opening notifications...', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.querySelector('.notification-bell').addEventListener('click', function() {
+            const dot = this.querySelector('.dot');
+            if (dot) dot.style.display = 'none';
+            this.style.background = '#2563eb';
+            this.style.color = 'white';
+            setTimeout(() => {
+                this.style.background = 'white';
+                this.style.color = '#475569';
+            }, 200);
+        });
+
+        function openCompareModal() {
+            document.getElementById('compareModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compareModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelector('.modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCompareModal();
+            }
+        });
+
+        function selectPlan(plan) {
+            const planNames = {
+                'basic': 'Basic Plan',
+                'comprehensive': 'Comprehensive Plan',
+                'premium': 'Premium Plan'
+            };
+
+            const planPrices = {
+                'basic': 299,
+                'comprehensive': 499,
+                'premium': 799
+            };
+
+            const planCoverage = {
+                'basic': 100000,
+                'comprehensive': 350000,
+                'premium': 1000000
+            };
+
+            sessionStorage.setItem('selectedPlan', JSON.stringify({
+                id: plan,
+                name: planNames[plan],
+                price: planPrices[plan],
+                coverage: planCoverage[plan]
+            }));
+
+            closeCompareModal();
+            window.location.href = "{% url 'customer_purchase_wizard' %}";
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCompareModal();
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1313 @@
+<!-- templates/core/customer_claim_detail.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS | Claim Details</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================ */
+        /* RESET & BASE */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-2: #7c3aed;
+            --primary-light: rgba(37, 99, 235, 0.10);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255,255,255,0.8);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ============================================================ */
+        /* SIDEBAR */
+        /* ============================================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+        .brand-text h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p { font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; }
+
+        .sidebar-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.25s;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-links a i { width: 18px; text-align: center; font-size: 15px; color: #64748b; transition: 0.25s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-links a:hover i { color: var(--primary); }
+        .nav-links a.active {
+            background: rgba(37, 99, 235, 0.12);
+            color: white;
+        }
+        .nav-links a.active i { color: var(--primary); }
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-links a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-links a .badge.success { background: var(--success); }
+        .nav-links a .badge.warning { background: var(--warning); }
+        .nav-links a .badge.danger { background: var(--danger); }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 10px;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: 0.25s;
+            text-decoration: none;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .sidebar-footer a i { width: 18px; color: #64748b; }
+        .sidebar-footer a.logout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+        .sidebar-footer a.logout:hover i { color: var(--danger); }
+
+        /* ============================================================ */
+        /* MAIN CONTENT */
+        /* ============================================================ */
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* TOPBAR */
+        /* ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .notification-bell:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .notification-bell .dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid white;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.25s;
+        }
+
+        .user-profile:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ============================================================ */
+        /* PAGE HEADER */
+        /* ============================================================ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-header .left h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .page-header .left p {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .page-header .right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ============================================================ */
+        /* CLAIM SUMMARY CARD */
+        /* ============================================================ */
+        .claim-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .claim-summary .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .claim-summary .header .left .number {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .claim-summary .header .left .policy {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .claim-summary .header .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .claim-summary .header .right .status {
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .claim-summary .header .right .status.approved {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+        }
+        .claim-summary .header .right .status.pending {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+        }
+        .claim-summary .header .right .status.investigation {
+            background: rgba(124, 58, 237, 0.10);
+            color: #7c3aed;
+        }
+        .claim-summary .header .right .status.rejected {
+            background: rgba(239, 68, 68, 0.10);
+            color: #ef4444;
+        }
+        .claim-summary .header .right .status.paid {
+            background: rgba(34, 197, 94, 0.10);
+            color: #16a34a;
+        }
+
+        .claim-summary .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .claim-summary .grid .item .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .claim-summary .grid .item .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+
+        .claim-summary .grid .item .value .currency {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        /* ============================================================ */
+        /* SECTION CARDS */
+        /* ============================================================ */
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .section-card .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section-card .section-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .section-card .section-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        /* ============================================================ */
+        /* FRAUD ANALYSIS */
+        /* ============================================================ */
+        .fraud-analysis {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .fraud-analysis .item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .fraud-analysis .item .label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .fraud-analysis .item .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+
+        .fraud-analysis .item .value .score-good {
+            color: var(--success);
+        }
+        .fraud-analysis .item .value .score-medium {
+            color: var(--warning);
+        }
+        .fraud-analysis .item .value .score-bad {
+            color: var(--danger);
+        }
+
+        .fraud-analysis .item .sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ============================================================ */
+        /* TIMELINE */
+        /* ============================================================ */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            align-items: flex-start;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-item .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .timeline-item .icon.green {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+        }
+        .timeline-item .icon.blue {
+            background: rgba(37, 99, 235, 0.10);
+            color: #2563eb;
+        }
+        .timeline-item .icon.orange {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+        }
+        .timeline-item .icon.purple {
+            background: rgba(124, 58, 237, 0.10);
+            color: #7c3aed;
+        }
+        .timeline-item .icon.red {
+            background: rgba(239, 68, 68, 0.10);
+            color: #ef4444;
+        }
+
+        .timeline-item .content {
+            flex: 1;
+        }
+
+        .timeline-item .content .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .timeline-item .content .desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+            margin-top: 2px;
+        }
+
+        .timeline-item .content .time {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* ============================================================ */
+        /* DOCUMENTS / EVIDENCE */
+        /* ============================================================ */
+        .document-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
+            transition: 0.3s;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .document-item:hover {
+            border-color: var(--primary);
+        }
+
+        .document-item .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .document-item .left i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .document-item .left .name {
+            font-weight: 500;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .document-item .right {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 4px 14px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-sm:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            border-color: transparent;
+            color: white;
+        }
+
+        .btn-sm.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        /* ============================================================ */
+        /* INVESTIGATOR NOTES */
+        /* ============================================================ */
+        .investigator-note {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .investigator-note .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .investigator-note .header .name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .investigator-note .header .time {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .investigator-note .content {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        /* ============================================================ */
+        /* TOAST */
+        /* ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .toast.show { display: block; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.warning { background: #f59e0b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 72px;
+                padding: 16px 10px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: none;
+            }
+            .sidebar .brand { justify-content: center; padding-bottom: 12px; margin-bottom: 16px; }
+            .sidebar .nav-links a { justify-content: center; padding: 10px; }
+            .sidebar .nav-links a i { font-size: 18px; width: auto; }
+            .sidebar .nav-links a .badge { display: none; }
+            .sidebar .sidebar-footer a { justify-content: center; }
+            .sidebar .sidebar-footer a i { font-size: 18px; width: auto; }
+
+            .main { margin-left: 72px; padding: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: block;
+            }
+            .sidebar .nav-links a { justify-content: flex-start; padding: 10px 14px; }
+            .sidebar .nav-links a i { font-size: 15px; width: 18px; }
+            .sidebar .nav-links a .badge { display: inline; }
+            .sidebar .sidebar-footer a { justify-content: flex-start; }
+            .sidebar .sidebar-footer a i { font-size: 15px; width: 18px; }
+
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .menu-toggle { display: block; }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .claim-summary .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .fraud-analysis {
+                grid-template-columns: 1fr;
+            }
+
+            .document-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .document-item .right {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .claim-summary .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .claim-summary .header {
+                flex-direction: column;
+            }
+
+            .section-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- SIDEBAR -->
+    <!-- ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2><span>SIFDS</span></h2>
+                <p>Insurance System 2.0</p>
+            </div>
+        </div>
+
+        <div class="sidebar-title">Main Menu</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_dashboard' %}">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'customer_policies' %}">
+                <i class="fas fa-file-contract"></i>
+                <span>My Policies</span>
+                <span class="badge">{{ policies|length }}</span>
+            </a>
+            <a href="{% url 'customer_purchase_policy' %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buy Policy</span>
+            </a>
+            <a href="{% url 'customer_renew_policy' %}">
+                <i class="fas fa-sync"></i>
+                <span>Renew Policy</span>
+            </a>
+            <a href="{% url 'customer_update_policy' %}">
+                <i class="fas fa-edit"></i>
+                <span>Update Policy</span>
+            </a>
+            <a href="{% url 'customer_cancel_policy' %}">
+                <i class="fas fa-times"></i>
+                <span>Cancel Policy</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Claims</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_claims' %}" class="active">
+                <i class="fas fa-file-alt"></i>
+                <span>My Claims</span>
+                <span class="badge warning">{{ pending_claims|default:0 }}</span>
+            </a>
+            <a href="{% url 'customer_submit_claim' %}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Submit Claim</span>
+            </a>
+            <a href="{% url 'customer_track_claim' %}">
+                <i class="fas fa-search"></i>
+                <span>Track Claim</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Payments</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_payments' %}">
+                <i class="fas fa-credit-card"></i>
+                <span>Payment History</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-file-invoice"></i>
+                <span>Invoices & Receipts</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Documents</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_documents' %}">
+                <i class="fas fa-file-invoice"></i>
+                <span>My Documents</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">AI & Security</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_ai_assistant' %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="{% url 'customer_fraud_monitor' %}">
+                <i class="fas fa-shield-alt"></i>
+                <span>Fraud Monitor</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Account</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_profile' %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'customer_notifications' %}">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="badge danger">{{ unread_notifications|default:0 }}</span>
+            </a>
+            <a href="{% url 'customer_settings' %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="{% url 'customer_support' %}">
+                <i class="fas fa-headset"></i>
+                <span>Support Center</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main class="main">
+
+        <!-- ===== TOPBAR ===== -->
+        <div class="topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="date">{{ now|date:"d M Y" }}</span>
+                <div class="notification-bell" onclick="toggleNotificationsDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <span class="dot" id="notificationDot"></span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name|default:"U"|make_list|first }}</div>
+                    <span class="user-name">{{ user.first_name|default:"User" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE HEADER ===== -->
+        <div class="page-header">
+            <div class="left">
+                <h2>Claim Details</h2>
+                <p>{{ claim.claim_number|default:"CLM-2026-045" }} - {{ claim.policy.type_display|default:"Vehicle Insurance" }}</p>
+            </div>
+            <div class="right">
+                <a href="{% url 'customer_claims' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Claims
+                </a>
+            </div>
+        </div>
+
+        <!-- ===== CLAIM SUMMARY ===== -->
+        <div class="claim-summary">
+            <div class="header">
+                <div class="left">
+                    <div class="number">{{ claim.claim_number|default:"CLM-2026-045" }}</div>
+                    <div class="policy">Policy: {{ claim.policy.type_display|default:"Vehicle Insurance" }} - {{ claim.policy.policy_number|default:"VP-2026-001" }}</div>
+                </div>
+                <div class="right">
+                    <span class="status {{ claim.status|default:'approved' }}">{{ claim.get_status_display|default:"Approved" }}</span>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="item">
+                    <div class="label">Incident Type</div>
+                    <div class="value">{{ claim.incident_type_display|default:"Accident" }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Claim Amount</div>
+                    <div class="value"><span class="currency">R</span>{{ claim.amount_claimed|default:"25,000"|floatformat:2 }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Approved Amount</div>
+                    <div class="value"><span class="currency">R</span>{{ claim.amount_approved|default:"25,000"|floatformat:2 }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Submitted Date</div>
+                    <div class="value">{{ claim.submitted_at|date:"d M Y"|default:"14 Jul 2026" }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Incident Date</div>
+                    <div class="value">{{ claim.incident_date|date:"d M Y"|default:"10 Jul 2026" }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Last Updated</div>
+                    <div class="value">{{ claim.updated_at|date:"d M Y"|default:"14 Jul 2026" }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Investigator</div>
+                    <div class="value">{{ claim.investigator|default:"Sarah Johnson" }}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Location</div>
+                    <div class="value">{{ claim.incident_location|default:"Johannesburg" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== AI FRAUD ANALYSIS ===== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-robot"></i> AI Fraud Analysis</h3>
+            </div>
+
+            <div class="fraud-analysis">
+                <div class="item">
+                    <div class="label">Fraud Score</div>
+                    <div class="value"><span class="score-good">{{ claim.ai_fraud_score|default:"4.2" }}%</span></div>
+                    <div class="sub">Low Risk</div>
+                </div>
+                <div class="item">
+                    <div class="label">Risk Level</div>
+                    <div class="value" style="color: var(--success);">✅ Low</div>
+                    <div class="sub">No suspicious patterns detected</div>
+                </div>
+                <div class="item">
+                    <div class="label">Document Completeness</div>
+                    <div class="value">100%</div>
+                    <div class="sub">All documents verified</div>
+                </div>
+                <div class="item">
+                    <div class="label">Estimated Processing</div>
+                    <div class="value">2-3 days</div>
+                    <div class="sub">On track</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; padding: 16px; background: rgba(37, 99, 235, 0.04); border-radius: 12px; border: 1px solid rgba(37, 99, 235, 0.06);">
+                <p style="font-size: 14px; color: var(--muted);">
+                    <i class="fas fa-info-circle" style="color: var(--primary); margin-right: 8px;"></i>
+                    <span id="aiExplanation">{{ claim.ai_analysis|default:"No suspicious patterns detected. Your claim appears legitimate." }}</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== CLAIM TIMELINE ===== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-clock"></i> Claim Timeline</h3>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="icon green"><i class="fas fa-check-circle"></i></div>
+                    <div class="content">
+                        <div class="title">Claim Approved</div>
+                        <div class="desc">Claim has been approved. Payment processing initiated.</div>
+                        <div class="time">14 Jul 2026, 10:15</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="icon purple"><i class="fas fa-search"></i></div>
+                    <div class="content">
+                        <div class="title">Investigation Completed</div>
+                        <div class="desc">Investigation concluded. No fraud detected. Recommended for approval.</div>
+                        <div class="time">13 Jul 2026, 15:20</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="icon blue"><i class="fas fa-robot"></i></div>
+                    <div class="content">
+                        <div class="title">AI Review Complete</div>
+                        <div class="desc">AI fraud assessment completed. Low risk score detected.</div>
+                        <div class="time">12 Jul 2026, 14:00</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="icon blue"><i class="fas fa-file-alt"></i></div>
+                    <div class="content">
+                        <div class="title">Documents Verified</div>
+                        <div class="desc">All supporting documents have been verified and approved.</div>
+                        <div class="time">11 Jul 2026, 09:30</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="icon blue"><i class="fas fa-upload"></i></div>
+                    <div class="content">
+                        <div class="title">Claim Submitted</div>
+                        <div class="desc">Claim successfully submitted for processing.</div>
+                        <div class="time">10 Jul 2026, 08:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== EVIDENCE DOCUMENTS ===== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-file-upload"></i> Evidence Documents</h3>
+                <div class="actions">
+                    <button class="btn-sm primary" onclick="uploadEvidence()">
+                        <i class="fas fa-upload"></i> Upload Evidence
+                    </button>
+                </div>
+            </div>
+
+            <div class="document-list">
+                <div class="document-item">
+                    <div class="left">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="name">Police Report</span>
+                    </div>
+                    <div class="right">
+                        <button class="btn-sm"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="btn-sm"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="left">
+                        <i class="fas fa-file-image"></i>
+                        <span class="name">Accident Photos</span>
+                    </div>
+                    <div class="right">
+                        <button class="btn-sm"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="btn-sm"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="left">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="name">Medical Report</span>
+                    </div>
+                    <div class="right">
+                        <button class="btn-sm"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="btn-sm"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="left">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="name">Quote for Repairs</span>
+                    </div>
+                    <div class="right">
+                        <button class="btn-sm"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="btn-sm"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== INVESTIGATOR NOTES ===== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-sticky-note"></i> Investigator Notes</h3>
+            </div>
+
+            <div class="investigator-note">
+                <div class="header">
+                    <span class="name">Sarah Johnson - Senior Investigator</span>
+                    <span class="time">13 Jul 2026, 15:20</span>
+                </div>
+                <div class="content">
+                    Investigation complete. All evidence reviewed. No signs of fraud detected. 
+                    The incident appears legitimate and matches the policyholder's description. 
+                    Recommended for approval.
+                </div>
+            </div>
+
+            <div class="investigator-note">
+                <div class="header">
+                    <span class="name">Sarah Johnson - Senior Investigator</span>
+                    <span class="time">12 Jul 2026, 10:00</span>
+                </div>
+                <div class="content">
+                    Reviewing submitted documents. Police report matches incident details. 
+                    Contacted the policyholder for additional information. Waiting for medical report.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================ */
+        // SIDEBAR TOGGLE
+        // ============================================================ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ============================================================ */
+        // NOTIFICATIONS
+        // ============================================================ */
+        function toggleNotificationsDropdown() {
+            const dot = document.getElementById('notificationDot');
+            if (dot) dot.style.display = 'none';
+            showToast('Opening notifications...', 'info');
+        }
+
+        // ============================================================ */
+        // TOAST
+        // ============================================================ */
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================ */
+        // NOTIFICATION BELL
+        // ============================================================ */
+        document.querySelector('.notification-bell').addEventListener('click', function() {
+            const dot = this.querySelector('.dot');
+            if (dot) dot.style.display = 'none';
+            this.style.background = '#2563eb';
+            this.style.color = 'white';
+            setTimeout(() => {
+                this.style.background = 'white';
+                this.style.color = '#475569';
+            }, 200);
+        });
+
+        // ============================================================ */
+        // UPLOAD EVIDENCE
+        // ============================================================ */
+        function uploadEvidence() {
+            showToast('Opening evidence upload...', 'info');
+        }
+
+        // ============================================================ */
+        // SIDEBAR CLOSE ON MOBILE
+        // ============================================================ */
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

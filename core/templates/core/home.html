@@ -1,0 +1,838 @@
+<!-- templates/core/home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS Insurance - Smart Insurance Management</title>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        .animate-fadeUp {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 5%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        
+        .nav-brand i {
+            color: #2563eb;
+            font-size: 2rem;
+        }
+        
+        .nav-brand span {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #475569;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #0f172a;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 0.6rem 1.8rem;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-lg {
+            padding: 0.9rem 2.8rem;
+            font-size: 1.05rem;
+        }
+        
+        .btn-white {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .btn-outline-white {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-outline-white:hover {
+            background: white;
+            color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,255,255,0.2);
+        }
+        
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 5% 5rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #faf5ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.06), transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .hero-content {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+        }
+        
+        .hero-badge i {
+            margin-right: 6px;
+        }
+        
+        .hero-title {
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+        }
+        
+        .hero-title .highlight {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #64748b;
+            max-width: 550px;
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+            padding-top: 2.5rem;
+            border-top: 2px solid rgba(0,0,0,0.06);
+        }
+        
+        .hero-stat {
+            text-align: center;
+        }
+        
+        .hero-stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: block;
+        }
+        
+        .hero-stat-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .hero-visual {
+            animation: slideInRight 0.8s ease forwards;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .hero-illustration {
+            width: 100%;
+            max-width: 550px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 30px;
+            padding: 3rem 2.5rem;
+            color: white;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(37, 99, 235, 0.25);
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .hero-illustration .shield-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-illustration h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-illustration p {
+            opacity: 0.85;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .illustration-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .illustration-features .feature-item {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .illustration-features .feature-item i {
+            font-size: 1rem;
+        }
+        
+        .floating-card {
+            position: absolute;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .floating-card-1 {
+            top: -20px;
+            right: -20px;
+            animation-delay: 0s;
+        }
+        
+        .floating-card-2 {
+            bottom: -10px;
+            left: -20px;
+            animation-delay: 1.5s;
+        }
+        
+        .floating-card i {
+            font-size: 1.6rem;
+            color: #2563eb;
+        }
+        
+        .floating-card .text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        
+        .floating-card .sub {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        /* ===== CTA SECTION ===== */
+        .cta {
+            padding: 4rem 5%;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15), transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            color: #94a3b8;
+            font-size: 1.15rem;
+            margin-bottom: 0;
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 3rem 5% 2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-brand i {
+            color: #2563eb;
+            margin-right: 8px;
+        }
+        
+        .footer p {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        
+        .footer h4 {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer ul {
+            list-style: none;
+        }
+        
+        .footer ul li {
+            padding: 0.3rem 0;
+        }
+        
+        .footer ul li a {
+            color: #94a3b8;
+            transition: color 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .footer ul li a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .hero-grid {
+                gap: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-title {
+                font-size: 2.4rem;
+            }
+            
+            .hero-subtitle {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .hero-stats {
+                justify-content: center;
+            }
+            
+            .hero-illustration {
+                padding: 2rem 1.5rem;
+            }
+            
+            .floating-card {
+                display: none;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .cta h2 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .hero-illustration .illustration-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- ============================== -->
+    <!-- NAVBAR -->
+    <!-- ============================== -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-halved"></i>
+            <span>SIFDS</span>
+        </div>
+        
+        <ul class="nav-links">
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li><a href="{% url 'features' %}" style="color: #2563eb;">Features</a></li>
+    <li><a href="{% url 'about' %}">About</a></li>
+    <li><a href="{% url 'contact' %}">Contact</a></li>
+</ul>
+        </ul>
+    </nav>
+    
+    <!-- ============================== -->
+    <!-- HERO SECTION -->
+    <!-- ============================== -->
+    <section class="hero" id="home">
+        <div class="hero-grid">
+            <!-- Left Content -->
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-robot"></i> AI-Powered Insurance
+                </div>
+                <h1 class="hero-title">
+                    Smart Insurance<br>
+                    <span class="highlight">For a Secure Future</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Experience the future of insurance with AI-powered fraud detection, 
+                    real-time claim processing, and intelligent virtual assistance. 
+                    Get protected in minutes, not days.
+                </p>
+                <div class="hero-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <!-- GET STARTED -> Register -->
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <!-- MESSAGE US -> Contact Page -->
+                    <a href="{% url 'contact' %}" class="btn btn-white btn-lg">
+                        <i class="fas fa-envelope"></i> Message Us
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">98.7%</span>
+                        <span class="hero-stat-label">Fraud Detection Rate</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">24/7</span>
+                        <span class="hero-stat-label">AI Assistance</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">5min</span>
+                        <span class="hero-stat-label">Claim Processing</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Visual -->
+            <div class="hero-visual">
+                <div class="hero-illustration">
+                    <div class="shield-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h3>Your Insurance Dashboard</h3>
+                    <p>Real-time insights, fraud alerts, and policy management at your fingertips</p>
+                    <div class="illustration-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i> AI Fraud Score: 4.2%
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-file-invoice"></i> 3 Active Policies
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-coin"></i> R 450,000 Cover
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-robot"></i> Assistant Online
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Cards -->
+                    <div class="floating-card floating-card-1">
+                        <i class="fas fa-bolt"></i>
+                        <div>
+                            <div class="text">AI Fraud Alert</div>
+                            <div class="sub">Real-time protection</div>
+                        </div>
+                    </div>
+                    <div class="floating-card floating-card-2">
+                        <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                        <div>
+                            <div class="text">Claim Approved</div>
+                            <div class="sub">In 4 minutes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ============================== -->
+    <!-- CTA SECTION (No Buttons) -->
+    <!-- ============================== -->
+    <section class="cta">
+        <div class="cta-content">
+            <h2>Ready to Experience <br>Smart Insurance?</h2>
+            <p>Join thousands of South Africans who have already switched to AI-powered insurance. 
+            Get covered in minutes, not days.</p>
+        </div>
+    </section>
+    
+    <!-- ============================== -->
+    <!-- FOOTER -->
+    <!-- ============================== -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <!-- Brand -->
+            <div>
+                <div class="footer-brand">
+                    <i class="fas fa-shield-halved"></i> SIFDS
+                </div>
+                <p>Smart Insurance Fraud Detection System. AI-powered insurance management for a secure future.</p>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <a href="#" style="color: #94a3b8; font-size: 1.2rem;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: #94a3b8; font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color: #94a3b8; font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" style="color: #94a3b8; font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            
+            <!-- Products -->
+            <div>
+                <h4>Products</h4>
+                <ul>
+                    <li><a href="#">Vehicle Insurance</a></li>
+                    <li><a href="#">Home Insurance</a></li>
+                    <li><a href="#">Life Insurance</a></li>
+                    <li><a href="#">Business Insurance</a></li>
+                </ul>
+            </div>
+            
+            <!-- Company -->
+            <div>
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            
+            <!-- Support -->
+            <div>
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2026 SIFDS Insurance Management System. All rights reserved. <br>
+            <span style="font-size: 0.8rem; opacity: 0.6;">Version 2.0 - AI-Powered Insurance Platform</span></p>
+        </div>
+    </footer>
+    
+    <!-- ============================== -->
+    <!-- SCRIPTS -->
+    <!-- ============================== -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Animate stats on scroll
+        const stats = document.querySelectorAll('.hero-stat-number');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const text = el.textContent;
+                    if (text.includes('%')) {
+                        const num = parseFloat(text);
+                        let current = 0;
+                        const increment = num / 40;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= num) {
+                                el.textContent = text;
+                                clearInterval(timer);
+                            } else {
+                                el.textContent = current.toFixed(1) + '%';
+                            }
+                        }, 30);
+                    } else if (text.includes('min')) {
+                        el.textContent = '5min';
+                    } else {
+                        const num = parseInt(text);
+                        let current = 0;
+                        const increment = num / 40;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= num) {
+                                el.textContent = text;
+                                clearInterval(timer);
+                            } else {
+                                el.textContent = Math.floor(current);
+                            }
+                        }, 30);
+                    }
+                    observer.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        stats.forEach(stat => observer.observe(stat));
+    </script>
+</body>
+</html>

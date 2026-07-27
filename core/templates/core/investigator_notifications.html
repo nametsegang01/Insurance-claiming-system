@@ -1,0 +1,993 @@
+<!-- templates/core/investigator_notifications.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS | Notifications</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================ */
+        /* RESET & BASE */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-2: #7c3aed;
+            --primary-light: rgba(37, 99, 235, 0.10);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255,255,255,0.8);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ============================================================ */
+        /* SIDEBAR */
+        /* ============================================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+        .brand-text h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p { font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; }
+
+        .sidebar-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.25s;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-links a i { width: 18px; text-align: center; font-size: 15px; color: #64748b; transition: 0.25s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-links a:hover i { color: var(--primary); }
+        .nav-links a.active {
+            background: rgba(37, 99, 235, 0.12);
+            color: white;
+        }
+        .nav-links a.active i { color: var(--primary); }
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-links a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-links a .badge.danger { background: var(--danger); }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 10px;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: 0.25s;
+            text-decoration: none;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .sidebar-footer a i { width: 18px; color: #64748b; }
+        .sidebar-footer a.logout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+        .sidebar-footer a.logout:hover i { color: var(--danger); }
+
+        /* ============================================================ */
+        /* MAIN CONTENT */
+        /* ============================================================ */
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* TOPBAR */
+        /* ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .welcome h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .welcome h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .welcome p { color: var(--muted); font-size: 14px; }
+
+        .topbar-actions { display: flex; gap: 12px; align-items: center; }
+
+        .notification-bell {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .notification-bell:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .notification-bell .dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid white;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.25s;
+        }
+
+        .user-profile:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .online-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 500;
+        }
+        .online-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        /* ============================================================ */
+        /* PAGE SPECIFIC STYLES */
+        /* ============================================================ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .page-header h1 i {
+            margin-right: 12px;
+            color: var(--primary);
+        }
+        .page-header p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .stat-card h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+        .stat-card .stat-change {
+            font-size: 12px;
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+        .stat-card .stat-change.up { color: var(--success); }
+        .stat-card .stat-change.down { color: var(--danger); }
+        .stat-card .stat-change.muted { color: var(--muted); }
+
+        .card-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+
+        .card-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-panel .panel-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .card-panel .panel-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 12px;
+            transition: 0.25s;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-item.unread {
+            background: rgba(37, 99, 235, 0.02);
+            margin: 0 -12px;
+            padding: 14px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-item .left {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex: 1;
+        }
+        .notification-item .left .notif-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .notification-item .left .notif-icon.info {
+            background: rgba(37, 99, 235, 0.10);
+            color: var(--primary);
+        }
+        .notification-item .left .notif-icon.success {
+            background: rgba(34, 197, 94, 0.10);
+            color: var(--success);
+        }
+        .notification-item .left .notif-icon.warning {
+            background: rgba(245, 158, 11, 0.10);
+            color: var(--warning);
+        }
+        .notification-item .left .notif-icon.danger {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+
+        .notification-item .info .title {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .notification-item .info .message {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .notification-item .info .time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .notification-item .right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        .notification-item .right .status-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 50px;
+        }
+        .notification-item .right .status-badge.unread {
+            background: rgba(37, 99, 235, 0.10);
+            color: var(--primary);
+        }
+        .notification-item .right .status-badge.read {
+            background: #f1f5f9;
+            color: var(--muted);
+        }
+        .notification-item .right .action-btn {
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+        }
+        .notification-item .right .action-btn:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.04);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+        .empty-state i {
+            font-size: 48px;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+        .empty-state h4 {
+            color: #0f172a;
+            font-size: 16px;
+            margin-top: 12px;
+        }
+        .empty-state p { font-size: 14px; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0 8px;
+            border-top: 1px solid var(--border);
+            margin-top: 12px;
+        }
+        .pagination a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            transition: 0.25s;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .current {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .toast.show { display: block; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.warning { background: #f59e0b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 72px;
+                padding: 16px 10px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: none;
+            }
+            .sidebar .brand { justify-content: center; padding-bottom: 12px; margin-bottom: 16px; }
+            .sidebar .nav-links a { justify-content: center; padding: 10px; }
+            .sidebar .nav-links a i { font-size: 18px; width: auto; }
+            .sidebar .nav-links a .badge { display: none; }
+            .sidebar .sidebar-footer a { justify-content: center; }
+            .sidebar .sidebar-footer a i { font-size: 18px; width: auto; }
+            .main { margin-left: 72px; padding: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: block;
+            }
+            .sidebar .nav-links a { justify-content: flex-start; padding: 10px 14px; }
+            .sidebar .nav-links a i { font-size: 15px; width: 18px; }
+            .sidebar .nav-links a .badge { display: inline; }
+            .sidebar .sidebar-footer a { justify-content: flex-start; }
+            .sidebar .sidebar-footer a i { font-size: 15px; width: 18px; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .menu-toggle { display: block; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .notification-item .right { align-items: flex-start; width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; align-items: flex-start; }
+            .topbar-actions { width: 100%; justify-content: flex-end; }
+            .welcome h1 { font-size: 22px; }
+            .page-header h1 { font-size: 22px; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- SIDEBAR -->
+    <!-- ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2><span>SIFDS</span></h2>
+                <p>Investigator Panel</p>
+            </div>
+        </div>
+
+        <div class="sidebar-title">Main</div>
+        <div class="nav-links">
+            <a href="{% url 'investigator_dashboard' %}">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Fraud & Cases</div>
+        <div class="nav-links">
+            <a href="{% url 'investigator_fraud_alerts' %}">
+                <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                <span>Fraud Alerts</span>
+                <span class="badge danger">{{ high_risk_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'investigator_cases' %}">
+                <i class="fas fa-folder-open"></i>
+                <span>My Cases</span>
+                <span class="badge warning">{{ active_investigations|default:0 }}</span>
+            </a>
+            <a href="{% url 'investigator_document_analysis' %}">
+                <i class="fas fa-file-alt"></i>
+                <span>Document Analysis</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Reports</div>
+        <div class="nav-links">
+            <a href="{% url 'investigator_fraud_reports' %}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Fraud Reports</span>
+            </a>
+            <a href="{% url 'investigator_fraud_analytics' %}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Fraud Analytics</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">AI & Account</div>
+        <div class="nav-links">
+            <a href="{% url 'investigator_ai_insights' %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Insights</span>
+            </a>
+            <a href="{% url 'investigator_notifications' %}" class="active">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="badge danger">{{ unread_count|default:0 }}</span>
+            </a>
+            <a href="{% url 'investigator_profile' %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'investigator_settings' %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main class="main">
+
+        <!-- ===== TOPBAR ===== -->
+        <div class="topbar">
+            <div class="welcome">
+                <h1><span>Notifications</span></h1>
+                <p>All your notifications in one place</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="online-status">
+                    <span class="dot"></span> Online
+                </span>
+                <span class="date">{{ now|date:"d M Y" }}</span>
+                <div class="notification-bell" onclick="showToast('Opening notifications...', 'info')">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_count > 0 %}
+                    <span class="dot"></span>
+                    {% endif %}
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name|default:"I"|make_list|first }}{{ user.last_name|default:""|make_list|first }}</div>
+                    <span class="user-name">{{ user.first_name|default:"Investigator" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE CONTENT ===== -->
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-bell"></i> Notifications</h1>
+                <p>All your notifications in one place</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% if unread_count > 0 %}
+                <a href="?mark_read=true" class="btn btn-success">
+                    <i class="fas fa-check-double"></i> Mark All Read
+                </a>
+                {% endif %}
+                <button class="btn btn-secondary" onclick="window.location.reload()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Notifications</div>
+                <h2>{{ page_obj.paginator.count|default:0 }}</h2>
+                <span class="stat-change muted">All time</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unread</div>
+                <h2 style="color: var(--primary);">{{ unread_count|default:0 }}</h2>
+                <span class="stat-change down"><i class="fas fa-clock"></i> Pending</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Read</div>
+                <h2 style="color: var(--success);">{{ page_obj.paginator.count|add:unread_count|default:0 }}</h2>
+                <span class="stat-change up"><i class="fas fa-check"></i> Viewed</span>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-list"></i> Notifications ({{ page_obj.paginator.count }})</h3>
+            </div>
+
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <div class="left">
+                        <div class="notif-icon {{ notification.notification_type }}">
+                            <i class="fas fa-{% if notification.notification_type == 'success' %}check-circle{% elif notification.notification_type == 'warning' %}exclamation-triangle{% elif notification.notification_type == 'danger' %}times-circle{% else %}info-circle{% endif %}"></i>
+                        </div>
+                        <div class="info">
+                            <div class="title">{{ notification.title }}</div>
+                            <div class="message">{{ notification.message }}</div>
+                            <div class="time">
+                                <i class="far fa-clock"></i> 
+                                {{ notification.created_at|date:"d M Y H:i" }}
+                                {% if notification.related_claim %}
+                                • Claim: {{ notification.related_claim.claim_number }}
+                                {% endif %}
+                                {% if notification.related_policy %}
+                                • Policy: {{ notification.related_policy.policy_number }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <span class="status-badge {% if notification.is_read %}read{% else %}unread{% endif %}">
+                            {% if notification.is_read %}Read{% else %}Unread{% endif %}
+                        </span>
+                        {% if not notification.is_read %}
+                        <button class="action-btn" onclick="markAsRead('{{ notification.id }}')">
+                            <i class="fas fa-check"></i> Mark Read
+                        </button>
+                        {% endif %}
+                        {% if notification.action_url %}
+                        <a href="{{ notification.action_url }}" class="action-btn" style="border-color: var(--primary); color: var(--primary);">
+                            <i class="fas fa-arrow-right"></i> View
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                    {% endif %}
+
+                    <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h4>No Notifications</h4>
+                    <p>You're all caught up! No new notifications.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function markAsRead(notificationId) {
+            fetch(`/investigator/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Notification marked as read.', 'success');
+                    location.reload();
+                }
+            })
+            .catch(() => {
+                showToast('Error marking notification as read.', 'error');
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

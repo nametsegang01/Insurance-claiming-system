@@ -1,0 +1,1573 @@
+<!-- templates/core/customer_submit_claim.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS | Submit Claim</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================ */
+        /* RESET & BASE */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-2: #7c3aed;
+            --primary-light: rgba(37, 99, 235, 0.10);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255,255,255,0.8);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ============================================================ */
+        /* SIDEBAR */
+        /* ============================================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+        .brand-text h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p { font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; }
+
+        .sidebar-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.25s;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-links a i { width: 18px; text-align: center; font-size: 15px; color: #64748b; transition: 0.25s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-links a:hover i { color: var(--primary); }
+        .nav-links a.active {
+            background: rgba(37, 99, 235, 0.12);
+            color: white;
+        }
+        .nav-links a.active i { color: var(--primary); }
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-links a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-links a .badge.success { background: var(--success); }
+        .nav-links a .badge.warning { background: var(--warning); }
+        .nav-links a .badge.danger { background: var(--danger); }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 10px;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: 0.25s;
+            text-decoration: none;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .sidebar-footer a i { width: 18px; color: #64748b; }
+        .sidebar-footer a.logout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+        .sidebar-footer a.logout:hover i { color: var(--danger); }
+
+        /* ============================================================ */
+        /* MAIN CONTENT */
+        /* ============================================================ */
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* TOPBAR */
+        /* ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .notification-bell:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .notification-bell .dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid white;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.25s;
+        }
+
+        .user-profile:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ============================================================ */
+        /* PAGE HEADER */
+        /* ============================================================ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-header .left h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .page-header .left p {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .page-header .right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ============================================================ */
+        /* FORM STEPS */
+        /* ============================================================ */
+        .steps-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            padding: 16px 24px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .step-indicator .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .step-indicator.active .step-num {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .step-indicator.completed .step-num {
+            background: var(--success);
+        }
+
+        .step-indicator .step-line {
+            width: 30px;
+            height: 2px;
+            background: #e2e8f0;
+        }
+
+        .step-indicator.completed .step-line {
+            background: var(--success);
+        }
+
+        .step-indicator.active .step-text {
+            color: var(--primary);
+        }
+
+        .step-indicator.completed .step-text {
+            color: var(--success);
+        }
+
+        /* ============================================================ */
+        /* FORM */
+        /* ============================================================ */
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-step .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .form-step .step-desc {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: 0.25s;
+            background: white;
+            color: #0f172a;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group .help-text {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ============================================================ */
+        /* FILE UPLOAD */
+        /* ============================================================ */
+        .file-upload {
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.25s;
+            background: #fafbfc;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.02);
+        }
+
+        .file-upload i {
+            font-size: 28px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .file-upload p {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .file-upload .file-name {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* ============================================================ */
+        /* AI REVIEW SECTION */
+        /* ============================================================ */
+        .ai-review {
+            background: linear-gradient(135deg, #f0f9ff, #faf5ff);
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid rgba(37, 99, 235, 0.06);
+            margin: 20px 0;
+        }
+
+        .ai-review .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .ai-review .header .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .ai-review .header h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .ai-review .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .ai-review .content .item .label {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .ai-review .content .item .value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .ai-review .content .item .value .score {
+            color: var(--primary);
+        }
+
+        /* ============================================================ */
+        /* FORM ACTIONS */
+        /* ============================================================ */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ============================================================ */
+        /* SUCCESS MODAL */
+        /* ============================================================ */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content .icon {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .modal-content p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .modal-content .details {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .modal-content .details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 14px;
+        }
+
+        .modal-content .details .row .label {
+            color: var(--muted);
+        }
+
+        .modal-content .details .row .value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .modal-content .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        /* ============================================================ */
+        /* TOAST */
+        /* ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .toast.show { display: block; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.warning { background: #f59e0b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 72px;
+                padding: 16px 10px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: none;
+            }
+            .sidebar .brand { justify-content: center; padding-bottom: 12px; margin-bottom: 16px; }
+            .sidebar .nav-links a { justify-content: center; padding: 10px; }
+            .sidebar .nav-links a i { font-size: 18px; width: auto; }
+            .sidebar .nav-links a .badge { display: none; }
+            .sidebar .sidebar-footer a { justify-content: center; }
+            .sidebar .sidebar-footer a i { font-size: 18px; width: auto; }
+
+            .main { margin-left: 72px; padding: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: block;
+            }
+            .sidebar .nav-links a { justify-content: flex-start; padding: 10px 14px; }
+            .sidebar .nav-links a i { font-size: 15px; width: 18px; }
+            .sidebar .nav-links a .badge { display: inline; }
+            .sidebar .sidebar-footer a { justify-content: flex-start; }
+            .sidebar .sidebar-footer a i { font-size: 15px; width: 18px; }
+
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .menu-toggle { display: block; }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-header .right {
+                width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .steps-indicator {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .step-indicator .step-line {
+                display: none;
+            }
+
+            .ai-review .content {
+                grid-template-columns: 1fr;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .modal-content {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                justify-content: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- SIDEBAR -->
+    <!-- ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2><span>SIFDS</span></h2>
+                <p>Insurance System 2.0</p>
+            </div>
+        </div>
+
+        <div class="sidebar-title">Main Menu</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_dashboard' %}">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'customer_policies' %}">
+                <i class="fas fa-file-contract"></i>
+                <span>My Policies</span>
+                <span class="badge">{{ policies|length }}</span>
+            </a>
+            <a href="{% url 'customer_purchase_policy' %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buy Policy</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-sync"></i>
+                <span>Renew Policy</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-edit"></i>
+                <span>Update Policy</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-times"></i>
+                <span>Cancel Policy</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Claims</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_claims' %}">
+                <i class="fas fa-file-alt"></i>
+                <span>My Claims</span>
+                <span class="badge warning">{{ pending_claims|default:0 }}</span>
+            </a>
+            <a href="{% url 'customer_submit_claim' %}" class="active">
+                <i class="fas fa-plus-circle"></i>
+                <span>Submit Claim</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-search"></i>
+                <span>Track Claim</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Payments</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_payments' %}">
+                <i class="fas fa-credit-card"></i>
+                <span>Payment History</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-file-invoice"></i>
+                <span>Invoices & Receipts</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Documents</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_documents' %}">
+                <i class="fas fa-file-invoice"></i>
+                <span>My Documents</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">AI & Security</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_ai_assistant' %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-shield-alt"></i>
+                <span>Fraud Monitor</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Account</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_profile' %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'customer_notifications' %}">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="badge danger">{{ unread_notifications|default:0 }}</span>
+            </a>
+            <a href="{% url 'customer_settings' %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-headset"></i>
+                <span>Support Center</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main class="main">
+
+        <!-- ===== TOPBAR ===== -->
+        <div class="topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="date">{{ now|date:"d M Y" }}</span>
+                <div class="notification-bell" onclick="toggleNotificationsDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <span class="dot" id="notificationDot"></span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name|default:"U"|make_list|first }}</div>
+                    <span class="user-name">{{ user.first_name|default:"User" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE HEADER ===== -->
+        <div class="page-header">
+            <div class="left">
+                <h2>Submit a Claim</h2>
+                <p>Complete the form below to submit your insurance claim</p>
+            </div>
+            <div class="right">
+                <a href="{% url 'customer_claims' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Claims
+                </a>
+            </div>
+        </div>
+
+        <!-- ===== STEPS INDICATOR ===== -->
+        <div class="steps-indicator">
+            <div class="step-indicator active" id="step1Indicator">
+                <span class="step-num">1</span>
+                <span class="step-text">Claim Details</span>
+                <span class="step-line"></span>
+            </div>
+            <div class="step-indicator" id="step2Indicator">
+                <span class="step-num">2</span>
+                <span class="step-text">Upload Documents</span>
+                <span class="step-line"></span>
+            </div>
+            <div class="step-indicator" id="step3Indicator">
+                <span class="step-num">3</span>
+                <span class="step-text">AI Review</span>
+                <span class="step-line"></span>
+            </div>
+            <div class="step-indicator" id="step4Indicator">
+                <span class="step-num">4</span>
+                <span class="step-text">Confirmation</span>
+            </div>
+        </div>
+
+        <!-- ===== FORM ===== -->
+        <div class="form-container">
+
+            <!-- STEP 1: Claim Details -->
+            <div class="form-step active" id="step1">
+                <div class="step-title">Claim Details</div>
+                <div class="step-desc">Provide information about your claim</div>
+
+                <form id="claimForm" onsubmit="submitClaim(event)">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+    <label>Select Policy <span class="required">*</span></label>
+    <select name="policy" required>
+        <option value="">Select a policy...</option>
+        {% for policy in policies %}
+            <option value="{{ policy.id }}">{{ policy.type_display }} - {{ policy.policy_number }}</option>
+        {% empty %}
+            <option value="">No active policies found. Please purchase a policy first.</option>
+        {% endfor %}
+    </select>
+</div>
+
+                    <div class="form-group">
+                        <label>Incident Type <span class="required">*</span></label>
+                        <select name="incident_type" required>
+                            <option value="">Select incident type...</option>
+                            <option value="accident">Accident</option>
+                            <option value="theft">Theft</option>
+                            <option value="damage">Damage</option>
+                            <option value="fire">Fire</option>
+                            <option value="natural_disaster">Natural Disaster</option>
+                            <option value="medical">Medical Emergency</option>
+                            <option value="death">Death Claim</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Incident Date <span class="required">*</span></label>
+                            <input type="date" name="incident_date" required max="{% now 'Y-m-d' %}">
+                        </div>
+                        <div class="form-group">
+                            <label>Amount Claimed <span class="required">*</span></label>
+                            <input type="number" name="amount" placeholder="e.g., 15000" required min="0" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Incident Location</label>
+                        <input type="text" name="location" placeholder="e.g., Johannesburg, Sandton">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Incident Description <span class="required">*</span></label>
+                        <textarea name="description" placeholder="Please describe what happened in detail..." required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="goToStep(2)">
+                            Next Step <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- STEP 2: Upload Documents -->
+            <div class="form-step" id="step2">
+                <div class="step-title">Upload Documents</div>
+                <div class="step-desc">Upload supporting documents for your claim</div>
+
+                <div class="form-group">
+                    <label>Supporting Documents</label>
+                    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload documents (JPG, PNG, PDF)</p>
+                        <div class="file-name" id="fileNameDisplay">No files selected</div>
+                        <input type="file" id="fileInput" multiple style="display:none;" onchange="updateFileNames()" accept=".jpg,.jpeg,.png,.gif,.pdf">
+                    </div>
+                    <div class="help-text">Maximum file size: 5MB per file. Supported formats: JPG, PNG, PDF</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea name="additional_notes" placeholder="Any additional information about your claim..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(1)">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="goToStep(3)">
+                        Review Claim <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: AI Review -->
+            <div class="form-step" id="step3">
+                <div class="step-title">AI Review</div>
+                <div class="step-desc">The AI will analyze your claim for fraud detection</div>
+
+                <div class="ai-review">
+                    <div class="header">
+                        <div class="icon"><i class="fas fa-robot"></i></div>
+                        <h4>AI Fraud Assessment</h4>
+                    </div>
+                    <div class="content" id="aiReviewContent">
+                        <div class="item">
+                            <div class="label">Fraud Score</div>
+                            <div class="value"><span class="score" id="fraudScore">4.2</span>%</div>
+                        </div>
+                        <div class="item">
+                            <div class="label">Risk Level</div>
+                            <div class="value" id="riskLevel" style="color: var(--success);">✅ Low Risk</div>
+                        </div>
+                        <div class="item">
+                            <div class="label">Document Completeness</div>
+                            <div class="value" id="docCompleteness">100%</div>
+                        </div>
+                        <div class="item">
+                            <div class="label">Estimated Processing Time</div>
+                            <div class="value" id="estTime">2-3 days</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; background: rgba(37, 99, 235, 0.04); border-radius: 8px; font-size: 13px; color: var(--muted);">
+                        <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                        <span id="aiExplanation">No suspicious patterns detected. Your claim appears legitimate.</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 16px;">
+                    <label>Confirm Claim Details</label>
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 16px; font-size: 14px; line-height: 1.8;">
+                        <p><strong>Policy:</strong> <span id="confirmPolicy">Vehicle Insurance</span></p>
+                        <p><strong>Incident Type:</strong> <span id="confirmIncident">Accident</span></p>
+                        <p><strong>Amount:</strong> <span id="confirmAmount">R0.00</span></p>
+                        <p><strong>Description:</strong> <span id="confirmDescription">-</span></p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(2)">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="submitClaim()">
+                        <i class="fas fa-check"></i> Submit Claim
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Confirmation (hidden, shown via modal) -->
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- SUCCESS MODAL -->
+    <!-- ============================================================ -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Claim Submitted!</h2>
+            <p>Your claim has been successfully submitted and is being reviewed.</p>
+            <div class="details">
+                <div class="row">
+                    <span class="label">Claim Number</span>
+                    <span class="value" id="successClaimNumber">CLM-2026-045</span>
+                </div>
+                <div class="row">
+                    <span class="label">AI Fraud Score</span>
+                    <span class="value" id="successFraudScore">4.2%</span>
+                </div>
+                <div class="row">
+                    <span class="label">Risk Level</span>
+                    <span class="value" style="color: var(--success);" id="successRiskLevel">✅ Low Risk</span>
+                </div>
+                <div class="row">
+                    <span class="label">Estimated Processing</span>
+                    <span class="value" id="successEstTime">2-3 days</span>
+                </div>
+                <div class="row">
+                    <span class="label">Status</span>
+                    <span class="value" style="color: var(--warning);">Pending Review</span>
+                </div>
+            </div>
+            <p style="font-size: 13px; color: var(--muted);">
+                <i class="fas fa-info-circle"></i> You will receive notifications when your claim is updated.
+            </p>
+            <div class="btn-group">
+                <a href="{% url 'customer_claims' %}" class="btn btn-secondary">
+                    <i class="fas fa-file-alt"></i> View My Claims
+                </a>
+                <a href="{% url 'customer_dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================ */
+        // SIDEBAR TOGGLE
+        // ============================================================ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ============================================================ */
+        // NOTIFICATIONS
+        // ============================================================ */
+        function toggleNotificationsDropdown() {
+            const dot = document.getElementById('notificationDot');
+            if (dot) dot.style.display = 'none';
+            showToast('Opening notifications...', 'info');
+        }
+
+        // ============================================================ */
+        // TOAST
+        // ============================================================ */
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================ */
+        // NOTIFICATION BELL
+        // ============================================================ */
+        document.querySelector('.notification-bell').addEventListener('click', function() {
+            const dot = this.querySelector('.dot');
+            if (dot) dot.style.display = 'none';
+            this.style.background = '#2563eb';
+            this.style.color = 'white';
+            setTimeout(() => {
+                this.style.background = 'white';
+                this.style.color = '#475569';
+            }, 200);
+        });
+
+        // ============================================================ */
+        // STEP NAVIGATION
+        // ============================================================ */
+        let currentStep = 1;
+
+        function goToStep(step) {
+            // Validate step 1 before going to step 2
+            if (step === 2 && currentStep === 1) {
+                const form = document.getElementById('claimForm');
+                const policy = form.querySelector('[name="policy"]').value;
+                const incident = form.querySelector('[name="incident_type"]').value;
+                const date = form.querySelector('[name="incident_date"]').value;
+                const amount = form.querySelector('[name="amount"]').value;
+                const description = form.querySelector('[name="description"]').value;
+
+                if (!policy || !incident || !date || !amount || !description) {
+                    showToast('Please fill in all required fields.', 'error');
+                    return;
+                }
+
+                // Update confirmation details
+                document.getElementById('confirmPolicy').textContent = form.querySelector('[name="policy"]').options[form.querySelector('[name="policy"]').selectedIndex].text;
+                document.getElementById('confirmIncident').textContent = form.querySelector('[name="incident_type"]').options[form.querySelector('[name="incident_type"]').selectedIndex].text;
+                document.getElementById('confirmAmount').textContent = 'R' + parseFloat(amount).toFixed(2);
+                document.getElementById('confirmDescription').textContent = description;
+            }
+
+            // Update steps
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById('step' + i);
+                const indicator = document.getElementById('step' + i + 'Indicator');
+                if (stepEl) stepEl.classList.remove('active');
+                if (indicator) {
+                    indicator.classList.remove('active');
+                    indicator.classList.remove('completed');
+                }
+            }
+
+            // Show target step
+            document.getElementById('step' + step).classList.add('active');
+
+            // Update indicators
+            for (let i = 1; i <= 4; i++) {
+                const indicator = document.getElementById('step' + i + 'Indicator');
+                if (indicator) {
+                    if (i < step) {
+                        indicator.classList.add('completed');
+                    } else if (i === step) {
+                        indicator.classList.add('active');
+                    }
+                }
+            }
+
+            currentStep = step;
+
+            // If going to step 3, run AI review
+            if (step === 3) {
+                runAIReview();
+            }
+        }
+
+        // ============================================================ */
+        // AI REVIEW
+        // ============================================================ */
+        function runAIReview() {
+            // Simulate AI analysis
+            const score = (Math.random() * 15 + 2).toFixed(1);
+            const isLowRisk = parseFloat(score) < 10;
+
+            document.getElementById('fraudScore').textContent = score;
+            document.getElementById('riskLevel').textContent = isLowRisk ? '✅ Low Risk' : '⚠️ Medium Risk';
+            document.getElementById('riskLevel').style.color = isLowRisk ? 'var(--success)' : 'var(--warning)';
+            document.getElementById('aiExplanation').textContent = isLowRisk ?
+                'No suspicious patterns detected. Your claim appears legitimate.' :
+                'Some unusual patterns detected. Further review may be required.';
+
+            // Update success modal data
+            document.getElementById('successFraudScore').textContent = score + '%';
+            document.getElementById('successRiskLevel').textContent = isLowRisk ? '✅ Low Risk' : '⚠️ Medium Risk';
+            document.getElementById('successRiskLevel').style.color = isLowRisk ? 'var(--success)' : 'var(--warning)';
+            document.getElementById('successEstTime').textContent = isLowRisk ? '2-3 days' : '5-7 days';
+
+            // Random claim number
+            const year = new Date().getFullYear();
+            const num = Math.floor(Math.random() * 9000 + 1000);
+            document.getElementById('successClaimNumber').textContent = `CLM-${year}-${num}`;
+        }
+
+        // ============================================================ */
+        // SUBMIT CLAIM - Saves to database
+        // ============================================================ */
+        function submitClaim() {
+            // Show loading state
+            const btn = document.querySelector('.btn-success');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            btn.disabled = true;
+
+            // Get form data
+            const form = document.getElementById('claimForm');
+            const policy = form.querySelector('[name="policy"]').value;
+            const incident_type = form.querySelector('[name="incident_type"]').value;
+            const incident_date = form.querySelector('[name="incident_date"]').value;
+            const amount = form.querySelector('[name="amount"]').value;
+            const location = form.querySelector('[name="location"]').value;
+            const description = form.querySelector('[name="description"]').value;
+
+            // Validate
+            if (!policy || !incident_type || !incident_date || !amount || !description) {
+                showToast('Please fill in all required fields.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            // Prepare data
+            const data = {
+                policy_id: policy,
+                incident_type: incident_type,
+                incident_date: incident_date,
+                incident_description: description,
+                incident_location: location,
+                amount_claimed: amount,
+            };
+
+            // Send to server
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                if (result.success) {
+                    // Update success modal with real data
+                    document.getElementById('successClaimNumber').textContent = result.claim_number;
+                    document.getElementById('successFraudScore').textContent = result.fraud_score + '%';
+                    
+                    const riskText = result.risk_level === 'Low' ? '✅ Low Risk' : 
+                                   (result.risk_level === 'Medium' ? '⚠️ Medium Risk' : '🔴 High Risk');
+                    document.getElementById('successRiskLevel').textContent = riskText;
+                    document.getElementById('successRiskLevel').style.color = 
+                        result.risk_level === 'Low' ? 'var(--success)' : 
+                        (result.risk_level === 'Medium' ? 'var(--warning)' : 'var(--danger)');
+                    
+                    document.getElementById('successEstTime').textContent = 
+                        result.risk_level === 'Low' ? '2-3 days' : 
+                        (result.risk_level === 'Medium' ? '5-7 days' : '10-14 days');
+
+                    // Show success modal
+                    document.getElementById('successModal').classList.add('active');
+                    
+                    showToast('Claim submitted successfully!', 'success');
+                    
+                    // Redirect to claims after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = "{% url 'customer_claims' %}";
+                    }, 3000);
+                } else {
+                    showToast(result.error || 'Failed to submit claim.', 'error');
+                }
+            })
+            .catch(error => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('An error occurred. Please try again.', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        // ============================================================ */
+        // CSRF TOKEN HELPER
+        // ============================================================ */
+        function getCsrfToken() {
+            let token = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (token) return token.value;
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 10) === 'csrftoken=') {
+                        cookieValue = cookie.substring(10);
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ============================================================ */
+        // GO BACK
+        // ============================================================ */
+        function goBack() {
+            window.location.href = "{% url 'customer_claims' %}";
+        }
+
+        // ============================================================ */
+        // FILE UPLOAD
+        // ============================================================ */
+        function updateFileNames() {
+            const input = document.getElementById('fileInput');
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files.length > 0) {
+                const names = Array.from(input.files).map(f => f.name).join(', ');
+                display.textContent = names;
+            } else {
+                display.textContent = 'No files selected';
+            }
+        }
+
+        // ============================================================ */
+        // MODAL CLOSE
+        // ============================================================ */
+        document.querySelector('.modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        // ============================================================ */
+        // SIDEBAR CLOSE ON MOBILE
+        // ============================================================ */
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

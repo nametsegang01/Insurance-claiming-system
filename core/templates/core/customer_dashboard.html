@@ -1,0 +1,1517 @@
+<!-- templates/core/customer_dashboard.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIFDS | Policyholder Dashboard</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ============================================================ */
+        /* RESET & BASE */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-2: #7c3aed;
+            --primary-light: rgba(37, 99, 235, 0.10);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255,255,255,0.8);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ============================================================ */
+        /* SIDEBAR */
+        /* ============================================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+        .brand-text h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p { font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; }
+
+        .sidebar-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.25s;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-links a i { width: 18px; text-align: center; font-size: 15px; color: #64748b; transition: 0.25s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-links a:hover i { color: var(--primary); }
+        .nav-links a.active {
+            background: rgba(37, 99, 235, 0.12);
+            color: white;
+        }
+        .nav-links a.active i { color: var(--primary); }
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-links a .badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-links a .badge.success { background: var(--success); }
+        .nav-links a .badge.warning { background: var(--warning); }
+        .nav-links a .badge.danger { background: var(--danger); }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 10px;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: 0.25s;
+            text-decoration: none;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .sidebar-footer a i { width: 18px; color: #64748b; }
+        .sidebar-footer a.logout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: var(--danger);
+        }
+        .sidebar-footer a.logout:hover i { color: var(--danger); }
+
+        /* ============================================================ */
+        /* MAIN CONTENT */
+        /* ============================================================ */
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* TOPBAR - MATCHING STAFF DASHBOARD */
+        /* ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .welcome h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .welcome h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .welcome .role-badge {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .welcome .role-badge .badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .topbar-actions { display: flex; gap: 12px; align-items: center; }
+
+        .online-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 500;
+        }
+        .online-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .notification-bell:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+        .notification-bell .dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid white;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.25s;
+        }
+
+        .user-profile:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* ============================================================ */
+        /* WELCOME BANNER */
+        /* ============================================================ */
+        .welcome-banner {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 40%, #faf5ff 100%);
+            border-radius: 20px;
+            padding: 28px 36px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.06);
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.06), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .welcome-banner .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner .greeting {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .welcome-banner .greeting .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-banner .subtitle {
+            font-size: 15px;
+            color: #475569;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .welcome-banner .ai-text {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .welcome-banner .ai-text i {
+            color: var(--primary);
+        }
+
+        .welcome-banner .staff-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: white;
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        /* ============================================================ */
+        /* STATS GRID */
+        /* ============================================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .stat-card h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+        .stat-card .stat-change {
+            font-size: 12px;
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+        .stat-card .stat-change.up { color: var(--success); }
+        .stat-card .stat-change.down { color: var(--danger); }
+        .stat-card .stat-change.muted { color: var(--muted); }
+        .stat-card .stat-icon {
+            float: right;
+            font-size: 22px;
+            opacity: 0.2;
+            color: var(--primary);
+        }
+
+        /* ============================================================ */
+        /* DASHBOARD GRID */
+        /* ============================================================ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* ============================================================ */
+        /* CARD PANEL */
+        /* ============================================================ */
+        .card-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+
+        .card-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-panel .panel-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .card-panel .panel-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .card-panel .panel-header a {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .card-panel .panel-header a:hover { color: #1d4ed8; }
+
+        /* ============================================================ */
+        /* POLICY ITEMS */
+        /* ============================================================ */
+        .policy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .policy-item:last-child { border-bottom: none; }
+
+        .policy-item .info .name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .policy-item .info .number {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .policy-item .info .details {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .policy-item .info .details span { margin-right: 12px; }
+
+        .policy-item .right {
+            text-align: right;
+        }
+        .policy-item .right .status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 50px;
+        }
+        .policy-item .right .status.active {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+        }
+        .policy-item .right .status.pending {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+        }
+        .policy-item .right .status.expired {
+            background: rgba(239, 68, 68, 0.10);
+            color: #ef4444;
+        }
+        .policy-item .right .risk {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .policy-item .right .risk.low { color: var(--success); }
+        .policy-item .right .risk.medium { color: var(--warning); }
+        .policy-item .right .risk.high { color: var(--danger); }
+
+        /* ============================================================ */
+        /* CLAIM ITEMS */
+        /* ============================================================ */
+        .claim-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .claim-item:last-child { border-bottom: none; }
+
+        .claim-item .info .name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .claim-item .info .number {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .claim-item .info .details {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .claim-item .right .status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 50px;
+        }
+        .claim-item .right .status.approved {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+        }
+        .claim-item .right .status.pending {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+        }
+        .claim-item .right .status.review {
+            background: rgba(37, 99, 235, 0.10);
+            color: #2563eb;
+        }
+        .claim-item .right .status.rejected {
+            background: rgba(239, 68, 68, 0.10);
+            color: #ef4444;
+        }
+        .claim-item .right .ai-score {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .claim-item .right .ai-score .score { color: var(--primary); }
+
+        /* ============================================================ */
+        /* PAYMENT ITEMS */
+        /* ============================================================ */
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .payment-item:last-child { border-bottom: none; }
+
+        .payment-item .info .name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .payment-item .info .details {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .payment-item .right .amount {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 14px;
+        }
+        .payment-item .right .due {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .payment-item .right .due.urgent { color: var(--danger); }
+        .payment-item .right .due.soon { color: var(--warning); }
+
+        /* ============================================================ */
+        /* QUICK ACTIONS */
+        /* ============================================================ */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .quick-action-btn i {
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        /* ============================================================ */
+        /* AI ASSISTANT WIDGET */
+        /* ============================================================ */
+        .ai-widget {
+            background: linear-gradient(135deg, #0f172a, #1a2332);
+            border-radius: 16px;
+            padding: 20px 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-widget::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .ai-widget .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-widget .header .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .ai-widget .header .name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .ai-widget .header .status {
+            font-size: 11px;
+            color: #22c55e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ai-widget .header .status .dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        .ai-widget .message {
+            background: rgba(255,255,255,0.04);
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.04);
+            position: relative;
+            z-index: 1;
+            margin-bottom: 12px;
+        }
+
+        .ai-widget .message .highlight {
+            color: white;
+            font-weight: 600;
+        }
+
+        .ai-widget .quick-ai-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-widget .quick-ai-actions .ai-btn {
+            padding: 5px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ai-widget .quick-ai-actions .ai-btn:hover {
+            background: rgba(37, 99, 235, 0.15);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* ============================================================ */
+        /* NOTIFICATIONS */
+        /* ============================================================ */
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            align-items: flex-start;
+        }
+
+        .notification-item:last-child { border-bottom: none; }
+
+        .notification-item .icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .notification-item .icon.info {
+            background: rgba(37, 99, 235, 0.10);
+            color: #2563eb;
+        }
+        .notification-item .icon.success {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+        }
+        .notification-item .icon.warning {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+        }
+        .notification-item .icon.danger {
+            background: rgba(239, 68, 68, 0.10);
+            color: #ef4444;
+        }
+
+        .notification-item .content .text {
+            font-size: 13px;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+        .notification-item .content .text .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .notification-item .content .time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* ============================================================ */
+        /* EMPTY STATE */
+        /* ============================================================ */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--muted);
+        }
+        .empty-state i {
+            font-size: 36px;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+        .empty-state h4 { color: #0f172a; font-size: 16px; margin-bottom: 4px; }
+        .empty-state p { font-size: 14px; }
+
+        /* ============================================================ */
+        /* TOAST */
+        /* ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .toast.show { display: block; }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.warning { background: #f59e0b; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 72px;
+                padding: 16px 10px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: none;
+            }
+            .sidebar .brand { justify-content: center; padding-bottom: 12px; margin-bottom: 16px; }
+            .sidebar .nav-links a { justify-content: center; padding: 10px; }
+            .sidebar .nav-links a i { font-size: 18px; width: auto; }
+            .sidebar .nav-links a .badge { display: none; }
+            .sidebar .sidebar-footer a { justify-content: center; }
+            .sidebar .sidebar-footer a i { font-size: 18px; width: auto; }
+
+            .main { margin-left: 72px; padding: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar .brand-text p,
+            .sidebar .brand-text h2,
+            .sidebar .sidebar-title,
+            .sidebar .nav-links a span,
+            .sidebar .sidebar-footer a span {
+                display: block;
+            }
+            .sidebar .nav-links a { justify-content: flex-start; padding: 10px 14px; }
+            .sidebar .nav-links a i { font-size: 15px; width: 18px; }
+            .sidebar .nav-links a .badge { display: inline; }
+            .sidebar .sidebar-footer a { justify-content: flex-start; }
+            .sidebar .sidebar-footer a i { font-size: 15px; width: 18px; }
+
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 16px; }
+            .menu-toggle { display: block; }
+
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .quick-actions-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+
+            .topbar { flex-direction: column; align-items: flex-start; }
+            .topbar-actions { width: 100%; justify-content: flex-end; }
+            .welcome h1 { font-size: 22px; }
+            .welcome-banner { padding: 16px 20px; }
+            .welcome-banner .greeting { font-size: 24px; }
+            .card-panel { padding: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; align-items: flex-start; }
+            .topbar-actions { width: 100%; justify-content: flex-end; }
+            .welcome h1 { font-size: 20px; }
+            .welcome-banner .greeting { font-size: 20px; }
+            .card-panel { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- SIDEBAR -->
+    <!-- ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2><span>SIFDS</span></h2>
+                <p>Policy Holder</p>
+            </div>
+        </div>
+
+        <div class="sidebar-title">Main</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_dashboard' %}" class="active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Insurance</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_purchase_policy' %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buy Insurance</span>
+            </a>
+            <a href="{% url 'customer_policies' %}">
+                <i class="fas fa-file-contract"></i>
+                <span>My Policies</span>
+                {% if policies %}
+                <span class="badge">{{ policies|length }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_renew_policy' %}">
+                <i class="fas fa-sync"></i>
+                <span>Renew Policies</span>
+            </a>
+            <a href="{% url 'customer_update_policy' %}">
+                <i class="fas fa-arrow-up"></i>
+                <span>Upgrade Coverage</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Claims</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_submit_claim' %}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Submit Claim</span>
+            </a>
+            <a href="{% url 'customer_claims' %}">
+                <i class="fas fa-file-alt"></i>
+                <span>My Claims</span>
+                {% if pending_claims > 0 %}
+                <span class="badge warning">{{ pending_claims }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_track_claim' %}">
+                <i class="fas fa-search"></i>
+                <span>Track Claims</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Payments</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_payments' %}">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a href="{% url 'customer_invoices' %}">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>Payment History</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-receipt"></i>
+                <span>Receipts</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Documents</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_documents' %}">
+                <i class="fas fa-folder"></i>
+                <span>Documents</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">AI & Security</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_ai_assistant' %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="{% url 'customer_fraud_monitor' %}">
+                <i class="fas fa-shield-alt"></i>
+                <span>Fraud Monitor</span>
+            </a>
+        </div>
+
+        <div class="sidebar-title">Account</div>
+        <div class="nav-links">
+            <a href="{% url 'customer_profile' %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'customer_notifications' %}">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                {% if unread_notifications > 0 %}
+                <span class="badge danger">{{ unread_notifications }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'customer_settings' %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="{% url 'customer_support' %}">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main class="main">
+
+        <!-- ===== TOPBAR - MATCHING STAFF DASHBOARD ===== -->
+        <div class="topbar">
+            <div class="welcome">
+                <h1>Good {{ time_of_day }}, <span>{{ user.first_name|default:user.username }}</span>!</h1>
+                <div class="role-badge">
+                    <span class="badge">Policy Holder</span>
+                    <span>•</span>
+                    <span>Insurance Customer</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="online-status">
+                    <span class="dot"></span> Online
+                </span>
+                <span class="date">{{ now|date:"d M Y" }}</span>
+                <div class="notification-bell" onclick="toggleNotificationsDropdown()">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_notifications > 0 %}
+                    <span class="dot" id="notificationDot"></span>
+                    {% endif %}
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name|default:"U"|make_list|first }}{{ user.last_name|default:""|make_list|first }}</div>
+                    <span class="user-name">{{ user.first_name|default:user.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== WELCOME BANNER ===== -->
+        <div class="welcome-banner">
+            <div class="content">
+                <div class="greeting">
+                    Welcome, <span class="highlight">{{ user.first_name|default:user.username }}</span>! 👋
+                </div>
+                <div class="subtitle">Policy Holder - Insurance Customer</div>
+                <div class="ai-text">
+                    <i class="fas fa-robot"></i> Your insurance portfolio is being monitored by AI to keep you protected.
+                    {% if policies %}
+                    <span style="color: var(--success); font-weight: 500;">
+                        You have {{ policies|length }} active policies.
+                    </span>
+                    {% else %}
+                    <span style="color: var(--warning); font-weight: 500;">
+                        You don't have any active policies yet.
+                    </span>
+                    {% endif %}
+                </div>
+                <span class="staff-badge"><i class="fas fa-user"></i> Policy Holder</span>
+            </div>
+        </div>
+
+        <!-- ===== STATS GRID ===== -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon"><i class="fas fa-file-contract"></i></span>
+                <div class="stat-label">Active Policies</div>
+                <h2>{{ active_policies_count }}</h2>
+                <span class="stat-change up"><i class="fas fa-check"></i> Active</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><i class="fas fa-file-alt"></i></span>
+                <div class="stat-label">Total Claims</div>
+                <h2>{{ total_claims }}</h2>
+                <span class="stat-change muted">{{ pending_claims }} pending review</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><i class="fas fa-credit-card"></i></span>
+                <div class="stat-label">Premium Paid</div>
+                <h2>R{{ total_premium_paid|floatformat:0 }}</h2>
+                <span class="stat-change up"><i class="fas fa-arrow-up"></i> Up to date</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><i class="fas fa-shield-alt"></i></span>
+                <div class="stat-label">Fraud Risk Level</div>
+                <h2>{{ fraud_risk_level }}</h2>
+                <span class="stat-change up"><i class="fas fa-check-circle"></i> Monitored</span>
+            </div>
+        </div>
+
+        <!-- ===== DASHBOARD GRID ===== -->
+        <div class="dashboard-grid">
+
+            <!-- ===== LEFT COLUMN ===== -->
+            <div>
+
+                <!-- === POLICY STATUS === -->
+                <div class="card-panel" style="margin-bottom: 24px;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-file-contract"></i> Policy Status Overview</h3>
+                        <a href="{% url 'customer_policies' %}">View All</a>
+                    </div>
+
+                    {% if policies %}
+                        {% for policy in policies %}
+                        <div class="policy-item">
+                            <div class="info">
+                                <div class="name">{{ policy.get_policy_type_display }}</div>
+                                <div class="number">{{ policy.policy_number }}</div>
+                                <div class="details">
+                                    <span>Premium: R{{ policy.premium_amount|floatformat:2 }}</span>
+                                    {% if policy.end_date %}
+                                    <span>Renewal: {{ policy.end_date|date:"d M Y" }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="right">
+                                <div class="status {{ policy.status }}">{{ policy.get_status_display }}</div>
+                                {% if policy.ai_risk_score %}
+                                <div class="risk {% if policy.ai_risk_score < 30 %}low{% elif policy.ai_risk_score < 60 %}medium{% else %}high{% endif %}">
+                                    AI Risk: {{ policy.ai_risk_score }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-file-contract"></i>
+                            <h4>No Active Policies</h4>
+                            <p>You don't have any active policies yet. Buy your first policy today!</p>
+                            <a href="{% url 'customer_purchase_policy' %}" class="quick-action-btn" style="margin-top: 12px; justify-content: center;">
+                                <i class="fas fa-plus-circle"></i> Buy Now
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- === CLAIMS SUMMARY === -->
+                <div class="card-panel" style="margin-bottom: 24px;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-file-alt"></i> Claims Summary</h3>
+                        <a href="{% url 'customer_claims' %}">View All</a>
+                    </div>
+
+                    {% if claims %}
+                        {% for claim in claims|slice:":3" %}
+                        <div class="claim-item">
+                            <div class="info">
+                                <div class="name">{{ claim.get_incident_type_display }}</div>
+                                <div class="number">{{ claim.claim_number }}</div>
+                                <div class="details">Policy: {{ claim.policy.get_policy_type_display }}</div>
+                            </div>
+                            <div class="right">
+                                <div class="status {{ claim.status }}">{{ claim.get_status_display }}</div>
+                                {% if claim.ai_fraud_score %}
+                                <div class="ai-score">AI Score: <span class="score">{{ claim.ai_fraud_score }}%</span></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h4>No Claims</h4>
+                            <p>You haven't submitted any claims yet.</p>
+                            <a href="{% url 'customer_submit_claim' %}" class="quick-action-btn" style="margin-top: 12px; justify-content: center;">
+                                <i class="fas fa-plus-circle"></i> Submit a Claim
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ===== RIGHT COLUMN ===== -->
+            <div>
+
+                <!-- === UPCOMING PAYMENTS === -->
+                <div class="card-panel" style="margin-bottom: 24px;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-credit-card"></i> Upcoming Payments</h3>
+                        <a href="{% url 'customer_payments' %}">View All</a>
+                    </div>
+
+                    {% if upcoming_payments %}
+                        {% for payment in upcoming_payments|slice:":3" %}
+                        <div class="payment-item">
+                            <div class="info">
+                                <div class="name">{{ payment.policy.get_policy_type_display }}</div>
+                                <div class="details">Due: {{ payment.due_date|date:"d M Y" }}</div>
+                            </div>
+                            <div class="right">
+                                <div class="amount">R{{ payment.amount|floatformat:2 }}</div>
+                                <div class="due">
+                                    {{ payment.due_date|timeuntil }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-credit-card"></i>
+                            <h4>No Upcoming Payments</h4>
+                            <p>All your payments are up to date.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- === QUICK ACTIONS === -->
+                <div class="card-panel" style="margin-bottom: 24px;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions-grid">
+                        <a href="{% url 'customer_purchase_policy' %}" class="quick-action-btn">
+                            <i class="fas fa-plus-circle"></i> Buy New Policy
+                        </a>
+                        <a href="{% url 'customer_submit_claim' %}" class="quick-action-btn">
+                            <i class="fas fa-file-circle-plus"></i> Submit Claim
+                        </a>
+                        <a href="{% url 'customer_documents' %}" class="quick-action-btn">
+                            <i class="fas fa-upload"></i> Upload Document
+                        </a>
+                        <a href="{% url 'customer_ai_assistant' %}" class="quick-action-btn">
+                            <i class="fas fa-robot"></i> Chat with AI Assistant
+                        </a>
+                    </div>
+                </div>
+
+                <!-- === AI ASSISTANT === -->
+                <div class="ai-widget">
+                    <div class="header">
+                        <div class="icon"><i class="fas fa-robot"></i></div>
+                        <div>
+                            <div class="name">AI Assistant</div>
+                            <div class="status"><span class="dot"></span> Online</div>
+                        </div>
+                    </div>
+                    <div class="message">
+                        Hello <span class="highlight">{{ user.first_name|default:user.username }}</span>!
+                        I have analyzed your profile and found your insurance health is 
+                        {% if policies %}excellent{% else %}awaiting your first policy{% endif %}.
+                        How can I help you today?
+                    </div>
+                    <div class="quick-ai-actions">
+                        <button class="ai-btn" onclick="aiAction('Review my policies')">📋 Review my policies</button>
+                        <button class="ai-btn" onclick="aiAction('Check claim status')">📊 Check claim status</button>
+                        <button class="ai-btn" onclick="aiAction('Recommend coverage')">💡 Recommend coverage</button>
+                        <button class="ai-btn" onclick="aiAction('Explain my premium')">💰 Explain my premium</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===== NOTIFICATIONS ===== -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-bell"></i> Recent Notifications</h3>
+                <a href="{% url 'customer_notifications' %}">View All</a>
+            </div>
+
+            {% if notifications %}
+                {% for notif in notifications|slice:":4" %}
+                <div class="notification-item">
+                    <div class="icon {{ notif.notification_type|default:'info' }}">
+                        <i class="fas {% if notif.notification_type == 'success' %}fa-check-circle{% elif notif.notification_type == 'warning' %}fa-exclamation-triangle{% elif notif.notification_type == 'danger' %}fa-times-circle{% else %}fa-info-circle{% endif %}"></i>
+                    </div>
+                    <div class="content">
+                        <div class="text">{{ notif.message }}</div>
+                        <div class="time">{{ notif.created_at|timesince }} ago</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h4>No Notifications</h4>
+                    <p>No notifications at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================ */
+        // SIDEBAR TOGGLE
+        // ============================================================ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ============================================================ */
+        // NOTIFICATIONS
+        // ============================================================ */
+        function toggleNotificationsDropdown() {
+            const dot = document.getElementById('notificationDot');
+            if (dot) dot.style.display = 'none';
+            showToast('Opening notifications...', 'info');
+        }
+
+        // ============================================================ */
+        // AI ACTIONS
+        // ============================================================ */
+        function aiAction(action) {
+            showToast('AI: ' + action, 'success');
+            console.log('AI Action:', action);
+        }
+
+        // ============================================================ */
+        // TOAST
+        // ============================================================ */
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================ */
+        // NOTIFICATION BELL
+        // ============================================================ */
+        document.querySelector('.notification-bell').addEventListener('click', function() {
+            const dot = this.querySelector('.dot');
+            if (dot) dot.style.display = 'none';
+            this.style.background = '#2563eb';
+            this.style.color = 'white';
+            setTimeout(() => {
+                this.style.background = 'white';
+                this.style.color = '#475569';
+            }, 200);
+        });
+
+        // ============================================================ */
+        // STATS ANIMATION
+        // ============================================================ */
+        document.querySelectorAll('.stat-card h2').forEach(el => {
+            const text = el.textContent;
+            const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+            if (!isNaN(num) && num > 0 && num < 1000000) {
+                let current = 0;
+                const step = num / 30;
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= num) {
+                        el.textContent = text;
+                        clearInterval(timer);
+                    } else {
+                        const prefix = text.includes('R') ? 'R' : '';
+                        el.textContent = prefix + Math.floor(current);
+                    }
+                }, 30);
+            }
+        });
+
+        // ============================================================ */
+        // SIDEBAR CLOSE ON MOBILE
+        // ============================================================ */
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
