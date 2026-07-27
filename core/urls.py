@@ -30,6 +30,7 @@ urlpatterns = [
     path('dashboard/customer/notifications/', views.customer_notifications, name='customer_notifications'),
     path('dashboard/customer/profile/', views.customer_profile, name='customer_profile'),
     path('dashboard/customer/settings/', views.customer_settings, name='customer_settings'),
+    path('dashboard/customer/copilot/', views.copilot_chat, name='copilot_chat'),
 
     # STAFF
     path('dashboard/staff/', views.staff_dashboard, name='staff_dashboard'),

@@ -1,5 +1,6 @@
 import re
 import uuid
+import json
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -11,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .models import (
     UserProfile, Policy, Claim, Payment, Document,
@@ -91,6 +94,8 @@ def calculate_fraud_score(amount_claimed, policy, user):
 # ============================================================
 
 def home(request):
+    if request.user.is_authenticated:
+        logout(request)
     return render(request, 'core/home.html')
 
 
@@ -300,13 +305,45 @@ def customer_policy_detail(request, policy_id):
     payments = Payment.objects.filter(policy=policy)
     days_remaining = (policy.end_date - datetime.now().date()).days if policy.end_date else 0
 
+    now = timezone.now()
+    month_paid = payments.filter(
+        status='completed',
+        payment_type='premium',
+        paid_at__year=now.year, paid_at__month=now.month,
+    ).exists()
+
     context = {
         'policy': policy,
         'claims': claims,
         'payments': payments,
         'days_remaining': max(days_remaining, 0),
+        'month_paid': month_paid,
     }
     return render(request, 'core/customer_policy_detail.html', context)
+
+
+POLICY_LIMITS = {
+    'vehicle': (10000, 500000),
+    'home': (50000, 2000000),
+    'life': (50000, 5000000),
+    'health': (25000, 1000000),
+    'business': (100000, 5000000),
+    'travel': (5000, 200000),
+}
+
+PREMIUM_RATES = {
+    'vehicle': Decimal('0.015'),
+    'home': Decimal('0.008'),
+    'life': Decimal('0.005'),
+    'health': Decimal('0.012'),
+    'business': Decimal('0.010'),
+    'travel': Decimal('0.020'),
+}
+
+
+def calculate_premium(policy_type, coverage_amount):
+    rate = PREMIUM_RATES.get(policy_type, Decimal('0.010'))
+    return (Decimal(str(coverage_amount)) * rate / Decimal('12')).quantize(Decimal('0.01'))
 
 
 @role_required('policyholder')
@@ -314,13 +351,20 @@ def customer_purchase_policy(request):
     if request.method == 'POST':
         policy_type = request.POST.get('policy_type')
         coverage_amount = request.POST.get('coverage_amount')
-        premium_amount = request.POST.get('premium_amount')
         start_date = request.POST.get('start_date')
         beneficiary_name = request.POST.get('beneficiary_name', '').strip()
 
-        if not all([policy_type, coverage_amount, premium_amount, start_date]):
+        if not all([policy_type, coverage_amount, start_date]):
             messages.error(request, 'All required fields must be filled.')
             return redirect('customer_purchase_policy')
+
+        min_cov, max_cov = POLICY_LIMITS.get(policy_type, (1000, 1000000))
+        coverage = Decimal(coverage_amount)
+        if coverage < min_cov or coverage > max_cov:
+            messages.error(request, f'Coverage for this plan must be between R {min_cov:,.0f} and R {max_cov:,.0f}.')
+            return redirect('customer_purchase_policy')
+
+        premium_amount = calculate_premium(policy_type, coverage)
 
         policy_number = f"POL-{datetime.now().year}-{Policy.objects.count() + 1001}"
         start = datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -330,8 +374,8 @@ def customer_purchase_policy(request):
             policy_number=policy_number,
             user=request.user,
             policy_type=policy_type,
-            coverage_amount=Decimal(coverage_amount),
-            premium_amount=Decimal(premium_amount),
+            coverage_amount=coverage,
+            premium_amount=premium_amount,
             start_date=start,
             end_date=end,
             renewal_date=end,
@@ -347,10 +391,11 @@ def customer_purchase_policy(request):
                     f'{request.user.get_full_name()} applied for a {policy.get_policy_type_display()} policy.',
                     category='policy', action_url='/staff/applications/')
 
-        messages.success(request, f'Policy {policy.policy_number} submitted for review.')
-        return redirect('customer_policies')
+        messages.success(request, f'Policy {policy.policy_number} created. Your monthly premium is R {premium_amount:.2f}.')
+        return redirect('customer_payshap_payment', policy_id=policy.id)
 
-    return render(request, 'core/customer_purchase_policy.html')
+    context = {'policy_limits': POLICY_LIMITS}
+    return render(request, 'core/customer_purchase_policy.html', context)
 
 
 @role_required('policyholder')
@@ -560,9 +605,12 @@ def customer_claim_detail(request, claim_id):
 @role_required('policyholder')
 def customer_payments(request):
     payments = Payment.objects.filter(user=request.user).order_by('-created_at')
+    money_out = payments.filter(status='completed', payment_type='premium').aggregate(Sum('amount'))['amount__sum'] or 0
+    money_in = payments.filter(status='completed', payment_type='payout').aggregate(Sum('amount'))['amount__sum'] or 0
     context = {
         'payments': payments,
-        'total_paid': payments.filter(status='completed').aggregate(Sum('amount'))['amount__sum'] or 0,
+        'total_paid': money_out,
+        'money_in': money_in,
         'pending_count': payments.filter(status='pending').count(),
     }
     return render(request, 'core/customer_payments.html', context)
@@ -741,6 +789,30 @@ def staff_claims(request):
 def staff_claim_review(request, claim_id):
     claim = get_object_or_404(Claim, id=claim_id)
 
+    if request.method == 'POST' and request.POST.get('action') == 'pay_out':
+        claim.status = 'paid'
+        claim.save()
+        payment_number = f"PAY-{datetime.now().year}-{Payment.objects.count() + 1001}"
+        Payment.objects.create(
+            payment_number=payment_number,
+            user=claim.user,
+            claim=claim,
+            policy=claim.policy,
+            amount=claim.amount_approved or claim.amount_claimed,
+            payment_method='payshap',
+            payment_type='payout',
+            status='completed',
+            due_date=timezone.now().date(),
+            paid_at=timezone.now(),
+            reference=f"Payout-{claim.claim_number}",
+        )
+        notify(claim.user, 'Claim Payout Received',
+               f'R {(claim.amount_approved or claim.amount_claimed):.2f} has been paid to you for claim {claim.claim_number}.',
+               category='payment', related_claim=claim)
+        log_activity(request.user, 'approve', f'Paid out R {(claim.amount_approved or claim.amount_claimed):.2f} for claim {claim.claim_number}')
+        messages.success(request, f'Claim {claim.claim_number} paid out successfully.')
+        return redirect('staff_claims')
+
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'approve':
@@ -764,15 +836,24 @@ def staff_claim_review(request, claim_id):
                    action_url=f'/dashboard/customer/claim/{claim.id}/')
             messages.info(request, f'Claim {claim.claim_number} rejected.')
         elif action == 'investigate':
+            investigator_id = request.POST.get('investigator_id')
             claim.status = 'investigation'
+            if investigator_id:
+                claim.investigator_id = investigator_id
             claim.save()
+            if investigator_id:
+                inv = User.objects.get(id=investigator_id)
+                notify(inv, 'Case Assigned to You',
+                       f'Claim {claim.claim_number} has been assigned to you for investigation.',
+                       category='fraud', action_url=f'/investigator/cases/{claim.id}/')
             notify_role('investigator', 'Investigation Required',
                         f'Claim {claim.claim_number} needs investigation.',
-                        category='fraud', action_url=f'/investigator/case/{claim.id}/')
+                        category='fraud', action_url=f'/investigator/cases/{claim.id}/')
             messages.info(request, f'Claim {claim.claim_number} sent for investigation.')
         return redirect('staff_claims')
 
-    context = {'claim': claim}
+    investigators = User.objects.filter(profile__role='investigator', profile__status='active')
+    context = {'claim': claim, 'investigators': investigators}
     return render(request, 'core/staff_claim_review.html', context)
 
 
@@ -1054,3 +1135,57 @@ def admin_logs(request):
 @role_required('administrator')
 def admin_profile(request):
     return render(request, 'core/admin_profile.html')
+
+
+@role_required('policyholder')
+@require_POST
+@csrf_exempt
+def copilot_chat(request):
+    try:
+        data = json.loads(request.body)
+        question = (data.get('message') or '').strip().lower()
+    except Exception:
+        return JsonResponse({'reply': 'Sorry, I could not understand that. Could you rephrase?'})
+
+    if not question:
+        return JsonResponse({'reply': 'Hi! I am your SIFDS insurance assistant. Ask me about your policies, claims, payments, or coverage limits.'})
+
+    user = request.user
+    policies = Policy.objects.filter(user=user)
+    claims = Claim.objects.filter(user=user)
+    payments = Payment.objects.filter(user=user, status='completed')
+
+    if any(w in question for w in ['policy', 'policies', 'cover', 'coverage', 'plan']):
+        if policies.exists():
+            lines = []
+            for p in policies[:5]:
+                lines.append(f"{p.policy_number} ({p.get_policy_type_display()}): R {p.coverage_amount:,.0f} cover, R {p.premium_amount:.2f}/month, status: {p.get_status_display()}.")
+            return JsonResponse({'reply': f'You have {policies.count()} polic{"y" if policies.count()==1 else "ies"}:\n' + '\n'.join(lines)})
+        return JsonResponse({'reply': 'You do not have any policies yet. You can apply for one from the Policies page.'})
+
+    if any(w in question for w in ['claim', 'claims']):
+        if claims.exists():
+            lines = []
+            for c in claims[:5]:
+                lines.append(f"{c.claim_number}: {c.get_incident_type_display()}, R {c.amount_claimed:,.0f}, status: {c.get_status_display()}.")
+            return JsonResponse({'reply': f'You have {claims.count()} claim{"s" if claims.count()!=1 else ""}:\n' + '\n'.join(lines)})
+        return JsonResponse({'reply': 'You have not submitted any claims. You can submit one from the Claims page.'})
+
+    if any(w in question for w in ['pay', 'payment', 'premium', 'payshap', 'paid']):
+        total_out = payments.filter(payment_type='premium').aggregate(Sum('amount'))['amount__sum'] or 0
+        total_in = payments.filter(payment_type='payout').aggregate(Sum('amount'))['amount__sum'] or 0
+        return JsonResponse({'reply': f'You have paid R {total_out:,.2f} in premiums and received R {total_in:,.2f} in claim payouts. You can pay your premium using PayShap from any policy detail page.'})
+
+    if any(w in question for w in ['limit', 'max', 'minimum', 'range']):
+        return JsonResponse({'reply': 'Coverage limits by plan:\nVehicle: R 10,000 - R 500,000\nHome: R 50,000 - R 2,000,000\nLife: R 50,000 - R 5,000,000\nHealth: R 25,000 - R 1,000,000\nBusiness: R 100,000 - R 5,000,000\nTravel: R 5,000 - R 200,000'})
+
+    if any(w in question for w in ['premium', 'calculate', 'cost', 'price', 'how much']):
+        return JsonResponse({'reply': 'Your monthly premium is auto-calculated based on your coverage amount and plan type. For example, R 100,000 vehicle cover = about R 125/month. You will see the exact amount before you confirm your policy.'})
+
+    if any(w in question for w in ['hello', 'hi', 'hey', 'help']):
+        return JsonResponse({'reply': 'Hi! I am your SIFDS insurance assistant. I can help you with:\n- Your policies and coverage\n- Your claims and their status\n- Your payments and premiums\n- Coverage limits for each plan\n- How premiums are calculated\nWhat would you like to know?'})
+
+    if any(w in question for w in ['document', 'upload', 'file']):
+        return JsonResponse({'reply': 'You can upload supporting documents (ID, proof of address, police reports, photos) from the Documents page. Files must be JPG, PNG, or PDF, max 5MB each.'})
+
+    return JsonResponse({'reply': 'I can help with your policies, claims, payments, coverage limits, and premiums. Try asking "What are my policies?" or "How is my premium calculated?"'})

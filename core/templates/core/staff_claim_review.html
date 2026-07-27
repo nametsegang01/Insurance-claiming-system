@@ -63,12 +63,32 @@
         <button type="submit" name="action" value="investigate" class="btn">Send for investigation</button>
         <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
       </div>
+      <div class="field mt-16">
+        <label>Assign to investigator (for investigation)</label>
+        <select name="investigator_id">
+          <option value="">Auto-assign</option>
+          {% for inv in investigators %}
+          <option value="{{ inv.id }}">{{ inv.get_full_name|default:inv.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
       {% if claim.status == 'submitted' %}
       <div class="field mt-16">
         <label>Rejection reason (if rejecting)</label>
         <textarea name="reason" rows="2" placeholder="Explain why this claim is being rejected..."></textarea>
       </div>
       {% endif %}
+    </form>
+  </div>
+</div>
+{% elif claim.status == 'approved' %}
+<div class="card">
+  <div class="card-head"><h3>Pay out claim</h3></div>
+  <div class="card-body">
+    <div class="alert alert-success mb-16">This claim has been approved. You can now pay out R {{ claim.amount_approved|default:claim.amount_claimed|floatformat:2 }} to {{ claim.user.get_full_name|default:claim.user.username }} via PayShap.</div>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" name="action" value="pay_out" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Pay R {{ claim.amount_approved|default:claim.amount_claimed|floatformat:2 }} via PayShap</button>
     </form>
   </div>
 </div>

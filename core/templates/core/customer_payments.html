@@ -19,7 +19,8 @@
 
 {% block content %}
 <div class="stat-grid">
-  <div class="stat"><div class="label">Total paid</div><div class="value">R {{ total_paid|floatformat:2 }}</div></div>
+  <div class="stat"><div class="label">Money out (premiums paid)</div><div class="value">R {{ total_paid|floatformat:2 }}</div></div>
+  <div class="stat"><div class="label">Money in (claim payouts)</div><div class="value" style="color:var(--success)">R {{ money_in|floatformat:2 }}</div></div>
   <div class="stat"><div class="label">Pending payments</div><div class="value">{{ pending_count }}</div></div>
 </div>
 

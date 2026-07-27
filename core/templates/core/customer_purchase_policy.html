@@ -35,15 +35,14 @@
           <option value="travel">Travel Insurance</option>
         </select>
       </div>
-      <div class="form-grid">
-        <div class="field">
-          <label>Coverage amount (R)</label>
-          <input type="number" name="coverage_amount" min="1000" step="1000" required>
-        </div>
-        <div class="field">
-          <label>Monthly premium (R)</label>
-          <input type="number" name="premium_amount" min="0" step="0.01" required>
-        </div>
+      <div class="field">
+        <label>Coverage amount (R)</label>
+        <input type="number" name="coverage_amount" id="coverage_amount" min="{{ policy_limits|first|first }}" step="1000" required>
+        <div class="hint" id="limit_hint"></div>
+      </div>
+      <div class="field">
+        <label>Monthly premium (R) <span class="text-muted text-sm">(auto-calculated)</span></label>
+        <input type="text" id="premium_amount" readonly style="background:var(--bg); font-weight:600">
       </div>
       <div class="field">
         <label>Start date</label>
@@ -54,9 +53,37 @@
         <label>Beneficiary name (optional)</label>
         <input type="text" name="beneficiary_name" placeholder="Full name of beneficiary">
       </div>
-      <button type="submit" class="btn btn-primary">Submit application</button>
+      <button type="submit" class="btn btn-primary">Create policy & pay</button>
       <a href="{% url 'customer_policies' %}" class="btn">Cancel</a>
     </form>
   </div>
 </div>
+
+<script>
+const limits = {
+  vehicle: [10000, 500000, 0.015],
+  home: [50000, 2000000, 0.008],
+  life: [50000, 5000000, 0.005],
+  health: [25000, 1000000, 0.012],
+  business: [100000, 5000000, 0.010],
+  travel: [5000, 200000, 0.020],
+};
+const typeSelect = document.querySelector('[name=policy_type]');
+const covInput = document.getElementById('coverage_amount');
+const premInput = document.getElementById('premium_amount');
+const hint = document.getElementById('limit_hint');
+
+function updatePremium() {
+  const type = typeSelect.value;
+  const cov = parseFloat(covInput.value) || 0;
+  if (!type || !limits[type]) { premInput.value = ''; hint.textContent = ''; return; }
+  const [min, max, rate] = limits[type];
+  hint.textContent = `Cover range: R ${min.toLocaleString()} - R ${max.toLocaleString()}`;
+  if (cov < min || cov > max) { premInput.value = 'Invalid coverage'; return; }
+  const premium = (cov * rate / 12).toFixed(2);
+  premInput.value = `R ${premium}`;
+}
+typeSelect.addEventListener('change', updatePremium);
+covInput.addEventListener('input', updatePremium);
+</script>
 {% endblock %}
