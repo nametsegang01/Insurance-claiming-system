@@ -27,7 +27,7 @@
         <a href="{% url 'customer_purchase_policy' %}" class="btn btn-primary btn-sm mt-8">Apply for cover</a>
       </div>
     {% else %}
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="field">
         <label>Policy</label>
@@ -69,6 +69,11 @@
       <div class="field">
         <label>What happened?</label>
         <textarea name="incident_description" rows="4" placeholder="Describe the incident..." required></textarea>
+      </div>
+      <div class="field">
+        <label>Supporting documents (optional)</label>
+        <input type="file" name="documents" multiple accept="image/jpeg,image/png,application/pdf">
+        <div class="hint">Attach police reports, photos, medical reports, etc. JPG, PNG, or PDF. Max 5MB per file.</div>
       </div>
       <button type="submit" class="btn btn-primary">Submit claim</button>
       <a href="{% url 'customer_claims' %}" class="btn">Cancel</a>

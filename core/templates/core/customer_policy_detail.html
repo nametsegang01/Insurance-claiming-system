@@ -32,6 +32,15 @@
   <div class="stat"><div class="label">Days remaining</div><div class="value">{{ days_remaining }}</div></div>
 </div>
 
+{% if policy.status == 'active' or policy.status == 'expired' %}
+<div class="row mb-24" style="gap:10px">
+  <a href="{% url 'customer_renew_policy' policy.id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-rotate-right"></i> Renew policy</a>
+  {% if policy.status == 'active' %}
+  <a href="{% url 'customer_cancel_policy' policy.id %}" class="btn btn-danger btn-sm"><i class="fa-solid fa-ban"></i> Cancel policy</a>
+  {% endif %}
+</div>
+{% endif %}
+
 <div class="card mb-24">
   <div class="card-head"><h3>Policy details</h3></div>
   <div class="card-body">

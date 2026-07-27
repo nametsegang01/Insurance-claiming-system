@@ -15,9 +15,12 @@
 {% endblock %}
 
 {% block content %}
-<div class="stat-grid">
-  <div class="stat"><div class="label">Total completed</div><div class="value">R {{ total_completed|floatformat:2 }}</div></div>
-  <div class="stat"><div class="label">Pending</div><div class="value">{{ pending_count }}</div></div>
+<div class="row between mb-16">
+  <div class="stat-grid" style="margin-bottom:0">
+    <div class="stat"><div class="label">Total completed</div><div class="value">R {{ total_completed|floatformat:2 }}</div></div>
+    <div class="stat"><div class="label">Pending</div><div class="value">{{ pending_count }}</div></div>
+  </div>
+  <a href="{% url 'staff_create_payment' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create payment</a>
 </div>
 
 <div class="card">

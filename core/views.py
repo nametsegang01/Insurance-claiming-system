@@ -354,6 +354,61 @@ def customer_purchase_policy(request):
 
 
 @role_required('policyholder')
+def customer_renew_policy(request, policy_id):
+    policy = get_object_or_404(Policy, id=policy_id, user=request.user)
+
+    if request.method == 'POST':
+        if policy.status not in ('active', 'expired'):
+            messages.error(request, 'Only active or expired policies can be renewed.')
+            return redirect('customer_policy_detail', policy_id=policy.id)
+
+        policy.end_date = policy.end_date + timedelta(days=365)
+        policy.renewal_date = policy.end_date
+        policy.status = 'active'
+        policy.save()
+
+        notify(request.user, 'Policy Renewed',
+               f'Your {policy.get_policy_type_display()} policy {policy.policy_number} has been renewed until {policy.end_date.strftime("%d %b %Y")}.',
+               category='policy', related_policy=policy,
+               action_url=f'/dashboard/customer/policy/{policy.id}/')
+        notify_role('staff', 'Policy Renewed',
+                    f'{request.user.get_full_name()} renewed policy {policy.policy_number}.',
+                    category='policy')
+        messages.success(request, f'Policy {policy.policy_number} renewed until {policy.end_date.strftime("%d %b %Y")}.')
+        return redirect('customer_policy_detail', policy_id=policy.id)
+
+    context = {'policy': policy}
+    return render(request, 'core/customer_renew_policy.html', context)
+
+
+@role_required('policyholder')
+def customer_cancel_policy(request, policy_id):
+    policy = get_object_or_404(Policy, id=policy_id, user=request.user)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()
+        if not reason:
+            messages.error(request, 'Please provide a reason for cancellation.')
+            return redirect('customer_cancel_policy', policy_id=policy.id)
+
+        policy.status = 'cancelled'
+        policy.save()
+
+        notify(request.user, 'Policy Cancelled',
+               f'Your {policy.get_policy_type_display()} policy {policy.policy_number} has been cancelled.',
+               category='policy', related_policy=policy)
+        notify_role('staff', 'Policy Cancellation',
+                    f'{request.user.get_full_name()} cancelled policy {policy.policy_number}. Reason: {reason}',
+                    category='policy')
+        log_activity(request.user, 'update', f'Cancelled policy {policy.policy_number}: {reason}')
+        messages.success(request, f'Policy {policy.policy_number} has been cancelled.')
+        return redirect('customer_policies')
+
+    context = {'policy': policy}
+    return render(request, 'core/customer_cancel_policy.html', context)
+
+
+@role_required('policyholder')
 def customer_claims(request):
     claims = Claim.objects.filter(user=request.user).order_by('-submitted_at')
     context = {
@@ -400,6 +455,23 @@ def customer_submit_claim(request):
             fraud_score=score,
             fraud_flagged=score >= 60,
         )
+
+        files = request.FILES.getlist('documents')
+        for f in files:
+            if f.size > 5 * 1024 * 1024:
+                continue
+            allowed = ['image/jpeg', 'image/png', 'application/pdf']
+            if f.content_type not in allowed:
+                continue
+            doc_number = f"DOC-{datetime.now().year}-{Document.objects.count() + 1001}"
+            Document.objects.create(
+                document_number=doc_number,
+                user=request.user,
+                claim=claim,
+                document_type='other',
+                document_name=f.name,
+                document_file=f,
+            )
 
         notify(request.user, 'Claim Submitted',
                f'Your claim {claim_number} has been submitted and is being reviewed.',
@@ -663,6 +735,54 @@ def staff_payments(request):
         'pending_count': payments.filter(status='pending').count(),
     }
     return render(request, 'core/staff_payments.html', context)
+
+
+@role_required('staff')
+def staff_create_payment(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        policy_id = request.POST.get('policy_id') or None
+        claim_id = request.POST.get('claim_id') or None
+        amount = request.POST.get('amount')
+        payment_method = request.POST.get('payment_method', 'card')
+        payment_type = request.POST.get('payment_type', 'premium')
+        due_date = request.POST.get('due_date')
+        status = request.POST.get('status', 'pending')
+
+        if not all([user_id, amount, due_date]):
+            messages.error(request, 'User, amount, and due date are required.')
+            return redirect('staff_create_payment')
+
+        target_user = get_object_or_404(User, id=user_id)
+        policy = get_object_or_404(Policy, id=policy_id) if policy_id else None
+        claim = get_object_or_404(Claim, id=claim_id) if claim_id else None
+
+        payment_number = f"PAY-{datetime.now().year}-{Payment.objects.count() + 1001}"
+        Payment.objects.create(
+            payment_number=payment_number,
+            user=target_user,
+            policy=policy,
+            claim=claim,
+            amount=Decimal(amount),
+            payment_method=payment_method,
+            payment_type=payment_type,
+            status=status,
+            due_date=due_date,
+            paid_at=timezone.now() if status == 'completed' else None,
+        )
+
+        notify(target_user, 'Payment Recorded',
+               f'A payment of R {Decimal(amount):.2f} has been recorded on your account.',
+               category='payment', related_policy=policy, related_payment=Payment.objects.get(payment_number=payment_number))
+        log_activity(request.user, 'create', f'Created payment {payment_number} for {target_user.get_full_name()}')
+        messages.success(request, f'Payment {payment_number} created successfully.')
+        return redirect('staff_payments')
+
+    users = User.objects.filter(profile__role='policyholder').order_by('first_name')
+    policies = Policy.objects.filter(status='active').order_by('-created_at')
+    claims = Claim.objects.filter(status='approved').order_by('-submitted_at')
+    context = {'users': users, 'policies': policies, 'claims': claims}
+    return render(request, 'core/staff_create_payment.html', context)
 
 
 @role_required('staff')
